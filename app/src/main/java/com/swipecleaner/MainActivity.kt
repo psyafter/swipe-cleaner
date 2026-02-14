@@ -1,6 +1,9 @@
 package com.swipecleaner
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -56,6 +59,13 @@ class MainActivity : ComponentActivity() {
                     SwipeCleanerScreen(
                         state = state,
                         onRequestPermissions = { viewModel.requestPermissions() },
+                        onOpenSettings = {
+                            val intent = Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", packageName, null),
+                            )
+                            startActivity(intent)
+                        },
                         onAction = viewModel::onCardAction,
                         onUndo = viewModel::undo,
                         onConfirmDelete = viewModel::confirmDeletion,

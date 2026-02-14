@@ -29,6 +29,7 @@ data class ActionRecord(
 data class UiState(
     val isLoading: Boolean = false,
     val hasPermission: Boolean = false,
+    val isPermissionDenied: Boolean = false,
     val currentItem: MediaItem? = null,
     val remainingCount: Int = 0,
     val selectedForDeleteCount: Int = 0,
