@@ -5,7 +5,6 @@ build/
 app/build/
 *.iml
 
-
 # Signing files and credentials
 *.jks
 *.keystore
