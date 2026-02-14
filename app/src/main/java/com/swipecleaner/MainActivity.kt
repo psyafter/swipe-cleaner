@@ -1,5 +1,6 @@
 package com.swipecleaner
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -74,7 +75,24 @@ class MainActivity : ComponentActivity() {
                         onRestorePurchases = viewModel::restorePurchases,
                         onClosePaywall = viewModel::closePaywall,
                         onDismissDeletionSuccess = viewModel::dismissDeletionSuccessDialog,
-                        onRateApp = viewModel::dismissDeletionSuccessDialog,
+                        onRateApp = {
+                            val appPackage = packageName
+                            val marketIntent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("market://details?id=$appPackage"),
+                            )
+                            val webIntent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://play.google.com/store/apps/details?id=$appPackage"),
+                            )
+                            try {
+                                startActivity(marketIntent)
+                            } catch (_: ActivityNotFoundException) {
+                                startActivity(webIntent)
+                            } finally {
+                                viewModel.dismissDeletionSuccessDialog()
+                            }
+                        },
                     )
                 }
             }

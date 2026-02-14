@@ -210,8 +210,6 @@ DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
 #   * For example: A user cannot expect ${Hostname} to be expanded, as it is an environment variable and will be
 #     treated as '${Hostname}' itself on the command line.
 
-ORIGINAL_ARGS="$*"
-
 set -- \
         "-Dorg.gradle.appname=$APP_BASE_NAME" \
         -classpath "$CLASSPATH" \
@@ -251,15 +249,4 @@ eval "set -- $(
     )" '"$@"'
 
 "$JAVACMD" "$@"
-status=$?
-
-# Fallback to a system Gradle installation when the wrapper bootstrap fails
-# (for example, in restricted networks where the distribution cannot be downloaded).
-if [ $status -ne 0 ] && command -v gradle >/dev/null 2>&1
-then
-    echo "Gradle wrapper failed with exit code $status, falling back to system Gradle." >&2
-    # shellcheck disable=SC2086
-    exec gradle $ORIGINAL_ARGS
-fi
-
-exit $status
+exit $?
