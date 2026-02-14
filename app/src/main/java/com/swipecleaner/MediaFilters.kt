@@ -1,21 +1,50 @@
 package com.swipecleaner
 
-enum class FilterPreset { ALL, SCREENSHOTS, VIDEOS, LARGEST, OLDEST, WHATSAPP_TELEGRAM }
+import java.util.concurrent.TimeUnit
+
+enum class FilterPreset {
+    ALL,
+    LARGE_ONLY,
+    OLD_ONLY,
+    SCREENSHOTS,
+    WHATSAPP_MEDIA,
+}
 
 object MediaFilters {
-    fun apply(items: List<MediaItem>, preset: FilterPreset): List<MediaItem> {
-        return when (preset) {
-            FilterPreset.ALL -> items.sortedByDescending { it.dateTakenMillis }
-            FilterPreset.SCREENSHOTS -> items.filter { it.relativePath?.contains("Screenshots", true) == true }
-            FilterPreset.VIDEOS -> items.filter { it.kind == MediaKind.VIDEO }
-            FilterPreset.LARGEST -> items.sortedByDescending { it.sizeBytes }
-            FilterPreset.OLDEST -> items.sortedBy { it.dateTakenMillis }
-            FilterPreset.WHATSAPP_TELEGRAM -> items.filter {
-                val path = it.relativePath.orEmpty()
-                path.contains("WhatsApp", true) || path.contains("Telegram", true)
-            }
+    private const val LARGE_THRESHOLD_BYTES = 50L * 1024L * 1024L
+    private val OLD_THRESHOLD_MILLIS = TimeUnit.DAYS.toMillis(183)
+
+    fun apply(
+        items: List<MediaItem>,
+        preset: FilterPreset,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): List<MediaItem> {
+        val filtered = when (preset) {
+            FilterPreset.ALL -> items
+            FilterPreset.LARGE_ONLY -> items.filter { it.sizeBytes > LARGE_THRESHOLD_BYTES }
+            FilterPreset.OLD_ONLY -> items.filter { nowMillis - it.dateTakenMillis >= OLD_THRESHOLD_MILLIS }
+            FilterPreset.SCREENSHOTS -> items.filter(::isScreenshot)
+            FilterPreset.WHATSAPP_MEDIA -> items.filter(::isWhatsApp)
         }
+
+        return filtered.sortedByDescending { it.dateTakenMillis }
     }
 
     fun totalBytes(items: Collection<MediaItem>): Long = items.sumOf { it.sizeBytes }
+
+    private fun isScreenshot(item: MediaItem): Boolean {
+        val path = item.relativePath.orEmpty()
+        val bucket = item.bucketName.orEmpty()
+        val mime = item.mimeType.orEmpty()
+        return path.contains("Screenshot", ignoreCase = true) ||
+            bucket.contains("Screenshot", ignoreCase = true) ||
+            mime.contains("screenshot", ignoreCase = true)
+    }
+
+    private fun isWhatsApp(item: MediaItem): Boolean {
+        val path = item.relativePath.orEmpty()
+        val bucket = item.bucketName.orEmpty()
+        return path.contains("WhatsApp", ignoreCase = true) ||
+            bucket.contains("WhatsApp", ignoreCase = true)
+    }
 }
