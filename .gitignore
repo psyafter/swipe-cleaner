@@ -4,3 +4,6 @@ local.properties
 build/
 app/build/
 *.iml
+
+# Exclude binary wrapper JAR in this repo context
+gradle/wrapper/gradle-wrapper.jar

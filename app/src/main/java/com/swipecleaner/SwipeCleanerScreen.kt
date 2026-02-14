@@ -159,7 +159,7 @@ private fun PaywallDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Unlimited deletes. One-time $2.99") },
+        title = { Text("Unlimited deletes.\nOne-time $2.99") },
         text = { Text("You’ve used 100 free deletes.") },
         confirmButton = {
             Button(onClick = onBuyPro) {
@@ -185,7 +185,7 @@ private fun DeletionSuccessDialog(
 ) {
     AlertDialog(
         onDismissRequest = onContinueCleaning,
-        title = { Text("Storage freed 🎉") },
+        title = { Text("Storage freed🎉") },
         text = { Text("Freed ${Formatters.bytesToHumanReadable(freedSizeBytes)} from $deletedCount files") },
         confirmButton = {
             Button(onClick = onContinueCleaning) {
