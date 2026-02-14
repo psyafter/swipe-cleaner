@@ -124,6 +124,7 @@ fun SwipeCleanerScreen(
             onBuyPro = onBuyPro,
             onRestorePurchases = onRestorePurchases,
             onDismiss = onClosePaywall,
+            paywallMessage = state.paywallMessage,
         )
     }
 }
@@ -156,11 +157,22 @@ private fun PaywallDialog(
     onBuyPro: () -> Unit,
     onRestorePurchases: () -> Unit,
     onDismiss: () -> Unit,
+    paywallMessage: String?,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Unlimited deletes.\nOne-time $2.99") },
-        text = { Text("You’ve used 100 free deletes.") },
+        text = {
+            Text(
+                buildString {
+                    append("You’ve used $FREE_DELETE_LIMIT free deletes.")
+                    if (!paywallMessage.isNullOrBlank()) {
+                        append("\n\n")
+                        append(paywallMessage)
+                    }
+                },
+            )
+        },
         confirmButton = {
             Button(onClick = onBuyPro) {
                 Text("Buy Pro")
