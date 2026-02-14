@@ -2,17 +2,30 @@
 
 Offline-first Android cleaner for quickly reviewing media with swipe gestures.
 
-## Build debug APK
+## Build APKs
+
+From a clean clone:
+
+```bash
+./gradlew assembleDebug
+```
+
+Or build module-specific variants:
 
 ```bash
 ./gradlew :app:assembleDebug
+./gradlew :app:assembleRelease
 ```
 
-Install with Android Studio or:
+Install debug build:
 
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
+
+
+> Note: `gradle-wrapper.jar` is intentionally not committed in this branch (binary excluded for PR policy).
+> If your clone is missing it, run `gradle wrapper` locally once to regenerate `gradle/wrapper/gradle-wrapper.jar`.
 
 ## Billing setup
 
