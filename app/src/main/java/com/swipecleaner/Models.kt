@@ -40,6 +40,9 @@ data class UiState(
     val freeDeleteUsedCount: Int = 0,
     val isProUnlocked: Boolean = false,
     val showPaywall: Boolean = false,
+    val showDeletionSuccessDialog: Boolean = false,
+    val lastDeletedCount: Int = 0,
+    val lastFreedSizeBytes: Long = 0,
 )
 
 sealed interface UiEvent {

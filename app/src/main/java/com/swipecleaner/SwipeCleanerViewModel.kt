@@ -35,6 +35,7 @@ class SwipeCleanerViewModel(
 
     private val queue = ArrayDeque<MediaItem>()
     private val deleteSelection = linkedSetOf<MediaItem>()
+    private var awaitingRestoreResult = false
 
 
     init {
@@ -47,6 +48,7 @@ class SwipeCleanerViewModel(
 
 
     fun requestPermissions() {
+        _uiState.update { it.copy(isPermissionDenied = false, infoMessage = null) }
         viewModelScope.launch {
             eventChannel.send(UiEvent.RequestPermission(requiredPermissions()))
         }
@@ -58,7 +60,7 @@ class SwipeCleanerViewModel(
                 it.copy(
                     hasPermission = false,
                     isPermissionDenied = true,
-                    infoMessage = "Permission denied. Cannot scan gallery.",
+                    infoMessage = "Permission denied",
                 )
             }
             return
@@ -91,6 +93,7 @@ class SwipeCleanerViewModel(
                     selectedDeleteSizeBytes = 0,
                     lastAction = null,
                     infoMessage = "Scanned ${filtered.size} items",
+                    showDeletionSuccessDialog = false,
                 )
             }
         }
@@ -165,7 +168,7 @@ class SwipeCleanerViewModel(
 
     private fun afterDeletion(success: Boolean) {
         if (!success) {
-            _uiState.update { it.copy(infoMessage = "Deletion canceled by user") }
+            _uiState.update { it.copy(infoMessage = "Canceled") }
             return
         }
         val deletedCount = deleteSelection.size
@@ -186,8 +189,15 @@ class SwipeCleanerViewModel(
                 selectedDeleteSizeBytes = 0,
                 freeDeleteUsedCount = updatedCount,
                 infoMessage = "Deleted $deletedCount files, freed ${Formatters.bytesToHumanReadable(deletedSize)}",
+                showDeletionSuccessDialog = true,
+                lastDeletedCount = deletedCount,
+                lastFreedSizeBytes = deletedSize,
             )
         }
+    }
+
+    fun dismissDeletionSuccessDialog() {
+        _uiState.update { it.copy(showDeletionSuccessDialog = false) }
     }
 
     fun closePaywall() {
@@ -196,17 +206,36 @@ class SwipeCleanerViewModel(
 
     fun buyPro(activity: Activity) {
         if (!billingManager.launchPurchaseFlow(activity)) {
-            _uiState.update { it.copy(infoMessage = "Pro product is not ready yet") }
+            _uiState.update {
+                it.copy(
+                    infoMessage = "Purchase is not ready yet. Please try again in a moment",
+                    showPaywall = true,
+                )
+            }
         }
     }
 
     fun restorePurchases() {
+        awaitingRestoreResult = true
+        _uiState.update { it.copy(infoMessage = "Restoring purchases…") }
         billingManager.queryPurchases()
     }
 
     private fun onProStatusChanged(isProUnlocked: Boolean) {
         monetizationStore.setIsProUnlocked(isProUnlocked)
-        _uiState.update { it.copy(isProUnlocked = isProUnlocked, showPaywall = false) }
+        val restoreMessage = if (awaitingRestoreResult) {
+            if (isProUnlocked) "Purchases restored" else "No active purchases found"
+        } else {
+            if (isProUnlocked) "Pro unlocked" else null
+        }
+        awaitingRestoreResult = false
+        _uiState.update {
+            it.copy(
+                isProUnlocked = isProUnlocked,
+                showPaywall = if (isProUnlocked) false else it.showPaywall,
+                infoMessage = restoreMessage,
+            )
+        }
     }
 
     private fun onBillingMessage(message: String) {
