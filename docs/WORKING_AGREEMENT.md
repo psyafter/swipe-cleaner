@@ -1,33 +1,31 @@
-# Working Agreement
+# Working Agreement (Swipe Cleaner)
 
-## Purpose
+## 1. Purpose
+This document is the single canonical source of truth for development rules in this repository.
 
-This file is the single canonical source of development rules for this repository.
-It exists to keep day-to-day work clear, calm, and consistent for everyone.
-If any older document overlaps with this one, this file takes priority.
+A prompt should specify MODE and TASK; everything else is read from this document.
 
-## Language rules
-
-- All GitHub-facing text must be in English:
+## 2. Language Rules (GitHub English-only)
+- GitHub-facing text MUST be in English only:
+  - PR title
+  - PR description
   - commit messages
-  - pull request titles and descriptions
-  - issue comments and review comments
-- All code comments must be in English.
+  - GitHub comments (issues, reviews, discussions)
+- Never use Russian in GitHub artifacts.
+- Code comments MUST be in English.
 
-## Workflow rules
-
+## 3. Workflow Rules (small commits, no refactors, no fetch, CI truth)
 - Keep changes small and surgical.
-- Do not do broad refactors, renames, or style-only rewrites unless explicitly requested.
-- Do not retry `git fetch`, `git pull`, or `git rebase` if they fail due to network/proxy errors (for example: `403 CONNECT tunnel failed`). Branch updates should be done via GitHub "Update branch".
-- Use Gradle Wrapper behavior only (`./gradlew`). Do not add fallback logic that uses system Gradle.
-- GitHub Actions is the source of truth for CI. If local Android SDK/tools are missing, do not claim local builds/tests passed.
+- Do not perform refactors, renames, or style-only rewrites unless explicitly requested by the task.
+- If `git fetch` / `git pull` / `git rebase` fails due to network/proxy issues (for example `403 CONNECT tunnel failed`), do NOT retry; Sasha updates branches via GitHub **Update branch**.
+- GitHub Actions is authoritative for build/test truth.
+- If Android SDK/tools are missing locally, do not claim tests/build passed locally; reference CI logs instead.
+- No dead-end UI actions: any visible button must work end-to-end or be disabled/hidden with clear UX.
 
-## Forbidden files and .gitignore expectations
+## 4. Forbidden Files & .gitignore expectations
+Never commit build outputs, generated artifacts, secrets, or sensitive credentials.
 
-Never commit build outputs, generated artifacts, secrets, or local diagnostics.
-
-Forbidden artifacts include:
-
+Forbidden patterns include:
 - `**/build/`
 - `*.apk`
 - `*.aab`
@@ -36,78 +34,136 @@ Forbidden artifacts include:
 - `*.tmp`
 - `*.jks`
 - `*.keystore`
-- tokens/API keys/private keys/secrets in any form
+- tokens, API keys, private keys, and secrets in any form
 
 Expectations:
+- `.gitignore` should cover the patterns above.
+- Before creating a PR, verify that no forbidden files are staged.
 
-- `.gitignore` should cover common generated artifacts and secret file patterns.
-- Before creating or updating a PR, verify no forbidden files are staged.
+## 5. Binary Files Policy (Gradle wrapper jar, icons, etc.)
+- Codex “Create PR” UI cannot include binaries.
+- If a binary is required (for example `gradle-wrapper.jar`), document exact steps for Sasha to generate and commit it locally.
+- Avoid binary changes unless they are explicitly required by the task.
 
-## Binary file policy
-
-- Do not attempt to include binaries via Codex "Create PR" UI.
-- If a binary is required (example: `gradle-wrapper.jar`), document exactly how Sasha should add it locally.
-- Keep binary-handling instructions explicit in the PR description when applicable.
-
-## UX rule for incomplete functionality
-
-- No dead-end buttons.
-- If functionality is not implemented yet, hide or disable the UI control and provide clear user-facing context.
-
-## Pull request template (English)
-
-Use this structure for every PR description:
-
-```md
-## Summary
-- Short bullet list of what changed.
-
-## Why
-- Problem being solved.
-
-## How to test
-1. Step-by-step verification flow.
-2. Include expected results.
-3. Mention limitations/environment assumptions.
-
-## Notes
-- Risks, follow-ups, or rollout notes.
-```
-
-`How to test` is required in every PR.
-
-## Quick preflight checklist (before Create PR)
-
+## 6. Preflight Checklist (before Create PR)
+- [ ] Scope is minimal and task-focused.
+- [ ] No style-only refactors/renames were added.
 - [ ] `git status` reviewed.
-- [ ] Changed files reviewed (for example via `git diff --name-only`).
-- [ ] No forbidden artifacts or secrets are staged.
-- [ ] Commit messages are in English.
-- [ ] PR title and description are in English.
-- [ ] Any unimplemented UI action is hidden/disabled with clear UX.
-- [ ] If local environment is incomplete, CI is referenced as the verification source.
+- [ ] `git diff --name-only` reviewed.
+- [ ] No forbidden files or secrets are staged.
+- [ ] Commit messages are English-only.
+- [ ] PR title and PR description are English-only.
+- [ ] If local Android environment is incomplete, verification notes point to GitHub Actions logs.
+- [ ] Any unfinished UI action is disabled/hidden with clear UX.
 
-## Good English examples
-
-### Example PR title
-
-- `Fix swipe counter reset when reopening gallery`
-
-### Example PR description
+## 7. PR Output Template (English)
+Use this template:
 
 ```md
 ## Summary
-- Fix counter initialization when gallery screen is recreated.
-- Add a regression test for state restore.
+- What changed.
 
 ## Why
-- Users could see an incorrect swipe count after returning to the gallery.
+- Problem/goal addressed.
 
 ## How to test
-1. Open gallery with at least 10 photos.
-2. Swipe 3 photos.
-3. Navigate away and return to gallery.
-4. Confirm counter still shows 3 swipes.
+1. Step-by-step verification.
+2. Expected result.
+3. Environment limitations (if any).
 
 ## Notes
-- CI workflow validates test execution in a full Android environment.
+- Risks, follow-ups, and binary-handling instructions (if needed).
 ```
+
+## 8. Modes (the key part)
+A prompt should specify MODE and TASK; everything else is read from this document.
+
+### MODE: BUGFIX
+**Intent**
+- Resolve a concrete defect with the smallest safe code change.
+
+**Constraints**
+- Fix root cause (or safest minimal correction).
+- No broad refactor/rename.
+- Preserve current behavior outside the bug scope.
+
+**Steps**
+1. Reproduce and define expected behavior.
+2. Implement minimal fix.
+3. Validate affected flow.
+4. Prepare English-only commit(s) and PR text.
+
+**Acceptance Criteria**
+- Reported bug is no longer reproducible.
+- No unrelated behavior changes.
+- Verification steps are documented.
+
+**Deliverables (English PR title+description, changed files list, how to test)**
+- PR title in English describing the bug fixed.
+- PR description in English using the template from section 7.
+- Explicit changed-files list.
+- Clear "How to test" steps.
+
+**Default commit plan**
+- 1 bug = 1 commit.
+- If tests/docs are needed, use at most one additional focused commit.
+
+### MODE: FEATURE
+**Intent**
+- Add a new user-visible or developer-facing capability with controlled scope.
+
+**Constraints**
+- Keep implementation incremental.
+- Avoid opportunistic refactors.
+- Any exposed UI control must be functional end-to-end or disabled/hidden with clear UX.
+
+**Steps**
+1. Define feature slice and non-goals.
+2. Implement minimal vertical slice.
+3. Add/adjust validation for the new behavior.
+4. Document usage/testing and prepare English-only PR artifacts.
+
+**Acceptance Criteria**
+- Feature works for intended flow.
+- No dead-end UI elements.
+- Testing steps and limits are documented.
+
+**Deliverables (English PR title+description, changed files list, how to test)**
+- PR title in English naming the feature.
+- PR description in English using section 7 template.
+- Explicit changed-files list.
+- Reproducible "How to test" instructions.
+
+**Default commit plan**
+- 1 feature slice = 1–2 commits (implementation, optional tests/docs).
+- Keep each commit reviewable and scoped.
+
+### MODE: RELEASE
+**Intent**
+- Prepare and document a release-ready state with traceable version and verification notes.
+
+**Constraints**
+- Release changes only (versioning, release notes, required fixes).
+- No unrelated cleanup.
+- If binary updates are required, document Sasha-local generation/commit steps.
+
+**Steps**
+1. Confirm release scope and version metadata.
+2. Apply minimal release changes.
+3. Validate via available local checks; use CI as source of truth when local env is limited.
+4. Produce English-only PR artifacts with release notes.
+
+**Acceptance Criteria**
+- Release metadata is consistent.
+- Required release checks are documented with truthful source (local vs CI).
+- No forbidden artifacts or secrets are included.
+
+**Deliverables (English PR title+description, changed files list, how to test)**
+- PR title in English for release update.
+- PR description in English using section 7 template and release notes.
+- Explicit changed-files list.
+- "How to test" including CI references when applicable.
+
+**Default commit plan**
+- 1 release prep = 1 commit.
+- If mandatory follow-up docs are needed, add one separate docs commit.

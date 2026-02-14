@@ -2,7 +2,7 @@
 
 Offline-first Android app for fast gallery cleanup with swipe gestures.
 
-Development rules are in `docs/WORKING_AGREEMENT.md` (canonical).
+Canonical development rules: docs/WORKING_AGREEMENT.md
 
 ## Version
 
