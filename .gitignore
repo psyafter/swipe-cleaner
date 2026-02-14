@@ -7,3 +7,9 @@ app/build/
 
 # Exclude binary wrapper JAR in this repo context
 gradle/wrapper/gradle-wrapper.jar
+
+# Signing files and credentials
+*.jks
+*.keystore
+keystore.properties
+keystore/

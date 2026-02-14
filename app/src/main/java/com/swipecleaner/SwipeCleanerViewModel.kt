@@ -146,7 +146,12 @@ class SwipeCleanerViewModel(
         if (!currentState.isProUnlocked) {
             val nextCount = currentState.freeDeleteUsedCount + deleteSelection.size
             if (nextCount > FREE_DELETE_LIMIT) {
-                _uiState.update { it.copy(showPaywall = true) }
+                _uiState.update {
+                    it.copy(
+                        showPaywall = true,
+                        paywallMessage = billingManager.productAvailabilityMessage(),
+                    )
+                }
                 return
             }
         }
@@ -201,15 +206,18 @@ class SwipeCleanerViewModel(
     }
 
     fun closePaywall() {
-        _uiState.update { it.copy(showPaywall = false) }
+        _uiState.update { it.copy(showPaywall = false, paywallMessage = null) }
     }
 
     fun buyPro(activity: Activity) {
         if (!billingManager.launchPurchaseFlow(activity)) {
+            val paywallMessage = billingManager.productAvailabilityMessage()
+                ?: "Purchase is not ready yet. Please try again in a moment"
             _uiState.update {
                 it.copy(
-                    infoMessage = "Purchase is not ready yet. Please try again in a moment",
+                    infoMessage = paywallMessage,
                     showPaywall = true,
+                    paywallMessage = paywallMessage,
                 )
             }
         }
@@ -233,6 +241,7 @@ class SwipeCleanerViewModel(
             it.copy(
                 isProUnlocked = isProUnlocked,
                 showPaywall = if (isProUnlocked) false else it.showPaywall,
+                paywallMessage = if (isProUnlocked) null else it.paywallMessage,
                 infoMessage = restoreMessage,
             )
         }

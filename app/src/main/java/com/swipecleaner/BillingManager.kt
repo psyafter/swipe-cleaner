@@ -22,6 +22,7 @@ class BillingManager(context: Context) : PurchasesResponseListener {
         .build()
 
     private var proProductDetails: ProductDetails? = null
+    private var productAvailabilityMessage: String? = null
     private var onProStatusChanged: (Boolean) -> Unit = {}
     private var onMessage: (String) -> Unit = {}
 
@@ -67,6 +68,8 @@ class BillingManager(context: Context) : PurchasesResponseListener {
         return result.responseCode == BillingClient.BillingResponseCode.OK
     }
 
+    fun productAvailabilityMessage(): String? = productAvailabilityMessage
+
     fun queryPurchases() {
         if (!billingClient.isReady) return
         billingClient.queryPurchasesAsync(
@@ -94,6 +97,16 @@ class BillingManager(context: Context) : PurchasesResponseListener {
         ) { result, detailsList ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                 proProductDetails = detailsList.firstOrNull()
+                productAvailabilityMessage = if (proProductDetails == null) {
+                    "Product not available in this build / check Play Console product id"
+                } else {
+                    null
+                }
+                if (productAvailabilityMessage != null) {
+                    onMessage(productAvailabilityMessage!!)
+                }
+            } else {
+                productAvailabilityMessage = "Billing unavailable: ${result.debugMessage}"
             }
         }
     }
