@@ -2,6 +2,9 @@ package com.swipecleaner
 
 import android.net.Uri
 
+const val FREE_DELETE_LIMIT = 100
+const val PRO_PRODUCT_ID = "pro_unlock"
+
 enum class MediaKind { IMAGE, VIDEO }
 
 data class MediaItem(
@@ -32,6 +35,10 @@ data class UiState(
     val selectedDeleteSizeBytes: Long = 0,
     val lastAction: ActionRecord? = null,
     val infoMessage: String? = null,
+    val activeFilter: FilterPreset = FilterPreset.ALL,
+    val freeDeleteUsedCount: Int = 0,
+    val isProUnlocked: Boolean = false,
+    val showPaywall: Boolean = false,
 )
 
 sealed interface UiEvent {

@@ -1,7 +1,8 @@
 package com.swipecleaner
 
+import android.app.Activity
 import android.content.ContentResolver
-import android.content.IntentSender
+import android.content.Context
 import android.os.Build
 import android.provider.MediaStore
 import androidx.lifecycle.ViewModel
@@ -18,8 +19,15 @@ import kotlinx.coroutines.launch
 class SwipeCleanerViewModel(
     private val contentResolver: ContentResolver,
     private val repository: MediaRepository,
+    private val monetizationStore: MonetizationStore,
+    private val billingManager: BillingManager,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(UiState())
+    private val _uiState = MutableStateFlow(
+        UiState(
+            freeDeleteUsedCount = monetizationStore.getFreeDeleteUsedCount(),
+            isProUnlocked = monetizationStore.getIsProUnlocked(),
+        )
+    )
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private val eventChannel = Channel<UiEvent>(Channel.BUFFERED)
@@ -27,6 +35,16 @@ class SwipeCleanerViewModel(
 
     private val queue = ArrayDeque<MediaItem>()
     private val deleteSelection = linkedSetOf<MediaItem>()
+
+
+    init {
+        billingManager.setCallbacks(
+            onProStatusChanged = ::onProStatusChanged,
+            onMessage = ::onBillingMessage,
+        )
+        billingManager.connect()
+    }
+
 
     fun requestPermissions() {
         viewModelScope.launch {
@@ -43,18 +61,30 @@ class SwipeCleanerViewModel(
         scan()
     }
 
+    fun setFilterPreset(preset: FilterPreset) {
+        if (_uiState.value.activeFilter == preset) return
+        _uiState.update { it.copy(activeFilter = preset) }
+        scan()
+    }
+
     private fun scan() {
         viewModelScope.launch {
+            val preset = _uiState.value.activeFilter
             _uiState.update { it.copy(isLoading = true, infoMessage = "Scanning media library…") }
             val items = repository.scanMedia()
+            val filtered = MediaFilters.apply(items, preset)
             queue.clear()
-            queue.addAll(items)
+            deleteSelection.clear()
+            queue.addAll(filtered)
             _uiState.update {
                 it.copy(
                     isLoading = false,
                     currentItem = queue.firstOrNull(),
                     remainingCount = queue.size,
-                    infoMessage = "Scanned ${items.size} items",
+                    selectedForDeleteCount = 0,
+                    selectedDeleteSizeBytes = 0,
+                    lastAction = null,
+                    infoMessage = "Scanned ${filtered.size} items",
                 )
             }
         }
@@ -69,7 +99,7 @@ class SwipeCleanerViewModel(
         }
 
         _uiState.update {
-            val bytes = deleteSelection.sumOf { item -> item.sizeBytes }
+            val bytes = MediaFilters.totalBytes(deleteSelection)
             it.copy(
                 currentItem = queue.firstOrNull(),
                 remainingCount = queue.size,
@@ -93,7 +123,7 @@ class SwipeCleanerViewModel(
                 currentItem = queue.firstOrNull(),
                 remainingCount = queue.size,
                 selectedForDeleteCount = deleteSelection.size,
-                selectedDeleteSizeBytes = deleteSelection.sumOf { item -> item.sizeBytes },
+                selectedDeleteSizeBytes = MediaFilters.totalBytes(deleteSelection),
                 lastAction = null,
                 infoMessage = "Undid ${last.action.name.lowercase()} action",
             )
@@ -102,6 +132,16 @@ class SwipeCleanerViewModel(
 
     fun confirmDeletion() {
         if (deleteSelection.isEmpty()) return
+
+        val currentState = _uiState.value
+        if (!currentState.isProUnlocked) {
+            val nextCount = currentState.freeDeleteUsedCount + deleteSelection.size
+            if (nextCount > FREE_DELETE_LIMIT) {
+                _uiState.update { it.copy(showPaywall = true) }
+                return
+            }
+        }
+
         viewModelScope.launch {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val request = MediaStore.createDeleteRequest(contentResolver, deleteSelection.map { it.uri })
@@ -123,15 +163,48 @@ class SwipeCleanerViewModel(
             return
         }
         val deletedCount = deleteSelection.size
-        val deletedSize = deleteSelection.sumOf { it.sizeBytes }
+        val deletedSize = MediaFilters.totalBytes(deleteSelection)
         deleteSelection.clear()
+
+        val state = _uiState.value
+        val updatedCount = if (state.isProUnlocked) {
+            state.freeDeleteUsedCount
+        } else {
+            (state.freeDeleteUsedCount + deletedCount).coerceAtMost(FREE_DELETE_LIMIT)
+        }
+        monetizationStore.setFreeDeleteUsedCount(updatedCount)
+
         _uiState.update {
             it.copy(
                 selectedForDeleteCount = 0,
                 selectedDeleteSizeBytes = 0,
+                freeDeleteUsedCount = updatedCount,
                 infoMessage = "Deleted $deletedCount files, freed ${Formatters.bytesToHumanReadable(deletedSize)}",
             )
         }
+    }
+
+    fun closePaywall() {
+        _uiState.update { it.copy(showPaywall = false) }
+    }
+
+    fun buyPro(activity: Activity) {
+        if (!billingManager.launchPurchaseFlow(activity)) {
+            _uiState.update { it.copy(infoMessage = "Pro product is not ready yet") }
+        }
+    }
+
+    fun restorePurchases() {
+        billingManager.queryPurchases()
+    }
+
+    private fun onProStatusChanged(isProUnlocked: Boolean) {
+        monetizationStore.setIsProUnlocked(isProUnlocked)
+        _uiState.update { it.copy(isProUnlocked = isProUnlocked, showPaywall = false) }
+    }
+
+    private fun onBillingMessage(message: String) {
+        _uiState.update { it.copy(infoMessage = message) }
     }
 
     private fun requiredPermissions(): Array<String> {
@@ -145,12 +218,23 @@ class SwipeCleanerViewModel(
         }
     }
 
-    class Factory(private val contentResolver: ContentResolver) : ViewModelProvider.Factory {
+    override fun onCleared() {
+        billingManager.endConnection()
+        super.onCleared()
+    }
+
+    class Factory(
+        private val context: Context,
+        private val contentResolver: ContentResolver,
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            val billingManager = BillingManager(context)
             return SwipeCleanerViewModel(
                 contentResolver = contentResolver,
                 repository = MediaRepository(contentResolver),
+                monetizationStore = MonetizationStore(context),
+                billingManager = billingManager,
             ) as T
         }
     }

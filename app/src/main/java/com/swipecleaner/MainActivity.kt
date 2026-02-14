@@ -16,7 +16,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 class MainActivity : ComponentActivity() {
     private val viewModel: SwipeCleanerViewModel by viewModels {
-        SwipeCleanerViewModel.Factory(contentResolver)
+        SwipeCleanerViewModel.Factory(
+            context = applicationContext,
+            contentResolver = contentResolver,
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +59,10 @@ class MainActivity : ComponentActivity() {
                         onAction = viewModel::onCardAction,
                         onUndo = viewModel::undo,
                         onConfirmDelete = viewModel::confirmDeletion,
+                        onFilterSelected = viewModel::setFilterPreset,
+                        onBuyPro = { viewModel.buyPro(this@MainActivity) },
+                        onRestorePurchases = viewModel::restorePurchases,
+                        onClosePaywall = viewModel::closePaywall,
                     )
                 }
             }
