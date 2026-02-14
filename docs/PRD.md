@@ -26,7 +26,7 @@ Deliver a 15-second wow: user opens app, grants permission, instantly swipes thr
 - Undo 1 step.
 - Size counter for delete selection.
 - Secure deletion request (`MediaStore.createDeleteRequest`) on Android 11+.
-- Basic fallback deletion on Android 8-10.
+- Basic deletion support on Android 8-10.
 
 ## Out of scope until M4+
 - Background worker analytics upload.
