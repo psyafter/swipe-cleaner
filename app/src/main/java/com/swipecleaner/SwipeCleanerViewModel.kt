@@ -54,10 +54,16 @@ class SwipeCleanerViewModel(
 
     fun onPermissionResult(granted: Boolean) {
         if (!granted) {
-            _uiState.update { it.copy(infoMessage = "Permission denied. Cannot scan gallery.") }
+            _uiState.update {
+                it.copy(
+                    hasPermission = false,
+                    isPermissionDenied = true,
+                    infoMessage = "Permission denied. Cannot scan gallery.",
+                )
+            }
             return
         }
-        _uiState.update { it.copy(hasPermission = true) }
+        _uiState.update { it.copy(hasPermission = true, isPermissionDenied = false, infoMessage = null) }
         scan()
     }
 

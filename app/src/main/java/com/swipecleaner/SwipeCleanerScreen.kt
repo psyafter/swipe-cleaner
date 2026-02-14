@@ -36,6 +36,7 @@ import coil.compose.AsyncImage
 fun SwipeCleanerScreen(
     state: UiState,
     onRequestPermissions: () -> Unit,
+    onOpenSettings: () -> Unit,
     onAction: (SwipeAction) -> Unit,
     onUndo: () -> Unit,
     onConfirmDelete: () -> Unit,
@@ -45,7 +46,11 @@ fun SwipeCleanerScreen(
     onClosePaywall: () -> Unit,
 ) {
     if (!state.hasPermission) {
-        PermissionScreen(onRequestPermissions)
+        PermissionScreen(
+            onRequestPermissions = onRequestPermissions,
+            onOpenSettings = onOpenSettings,
+            isPermissionDenied = state.isPermissionDenied,
+        )
         return
     }
 
@@ -151,7 +156,11 @@ private fun PaywallDialog(
 }
 
 @Composable
-private fun PermissionScreen(onRequestPermissions: () -> Unit) {
+private fun PermissionScreen(
+    onRequestPermissions: () -> Unit,
+    onOpenSettings: () -> Unit,
+    isPermissionDenied: Boolean,
+) {
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.Center,
@@ -160,6 +169,11 @@ private fun PermissionScreen(onRequestPermissions: () -> Unit) {
         Text("Need media permissions to start cleaning")
         Button(onClick = onRequestPermissions, modifier = Modifier.padding(top = 12.dp)) {
             Text("Grant access")
+        }
+        if (isPermissionDenied) {
+            Button(onClick = onOpenSettings, modifier = Modifier.padding(top = 12.dp)) {
+                Text("Open Settings")
+            }
         }
     }
 }
