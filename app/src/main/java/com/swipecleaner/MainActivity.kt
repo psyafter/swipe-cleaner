@@ -73,6 +73,8 @@ class MainActivity : ComponentActivity() {
                         onBuyPro = { viewModel.buyPro(this@MainActivity) },
                         onRestorePurchases = viewModel::restorePurchases,
                         onClosePaywall = viewModel::closePaywall,
+                        onDismissDeletionSuccess = viewModel::dismissDeletionSuccessDialog,
+                        onRateApp = viewModel::dismissDeletionSuccessDialog,
                     )
                 }
             }

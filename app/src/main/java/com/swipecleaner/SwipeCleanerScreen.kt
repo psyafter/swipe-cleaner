@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -44,6 +46,8 @@ fun SwipeCleanerScreen(
     onBuyPro: () -> Unit,
     onRestorePurchases: () -> Unit,
     onClosePaywall: () -> Unit,
+    onDismissDeletionSuccess: () -> Unit,
+    onRateApp: () -> Unit,
 ) {
     if (!state.hasPermission) {
         PermissionScreen(
@@ -70,13 +74,18 @@ fun SwipeCleanerScreen(
 
         FilterRow(active = state.activeFilter, onFilterSelected = onFilterSelected)
 
-        Text("Queue: ${state.remainingCount} items")
-        Text("Marked for delete: ${state.selectedForDeleteCount}")
-        Text("You can free ${Formatters.bytesToHumanReadable(state.selectedDeleteSizeBytes)}")
+        Text(
+            text = "You can free ${Formatters.bytesToHumanReadable(state.selectedDeleteSizeBytes)}",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Text("Marked: ${state.selectedForDeleteCount} files")
         Text(
             if (state.isProUnlocked) "Pro unlocked: unlimited deletions"
             else "Free deletions left: $freeLeft",
+            color = Color.Gray,
         )
+        Text("Queue: ${state.remainingCount} items", color = Color.Gray)
 
         if (state.isLoading) {
             Box(Modifier.fillMaxWidth().height(280.dp), contentAlignment = Alignment.Center) {
@@ -93,10 +102,21 @@ fun SwipeCleanerScreen(
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = onUndo, enabled = state.lastAction != null) { Text("Undo") }
-            Button(onClick = onConfirmDelete, enabled = state.selectedForDeleteCount > 0) { Text("Delete selected") }
+            Button(onClick = onConfirmDelete, enabled = state.selectedForDeleteCount > 0) { Text("Free space now") }
         }
 
+        Text("Will ask system confirmation", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+
         state.infoMessage?.let { Text(it, color = Color.Gray) }
+    }
+
+    if (state.showDeletionSuccessDialog) {
+        DeletionSuccessDialog(
+            freedSizeBytes = state.lastFreedSizeBytes,
+            deletedCount = state.lastDeletedCount,
+            onContinueCleaning = onDismissDeletionSuccess,
+            onRateApp = onRateApp,
+        )
     }
 
     if (state.showPaywall) {
@@ -110,8 +130,8 @@ fun SwipeCleanerScreen(
 
 @Composable
 private fun FilterRow(active: FilterPreset, onFilterSelected: (FilterPreset) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        FilterPreset.entries.forEach { preset ->
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        items(FilterPreset.entries) { preset ->
             FilterChip(
                 selected = active == preset,
                 onClick = { onFilterSelected(preset) },
@@ -124,9 +144,9 @@ private fun FilterRow(active: FilterPreset, onFilterSelected: (FilterPreset) -> 
 private fun filterLabel(preset: FilterPreset): String {
     return when (preset) {
         FilterPreset.ALL -> "All"
-        FilterPreset.LARGE_ONLY -> "Large"
+        FilterPreset.LARGE_ONLY -> "Big"
         FilterPreset.OLD_ONLY -> "Old"
-        FilterPreset.SCREENSHOTS -> "Screenshots"
+        FilterPreset.SCREENSHOTS -> "Shots"
         FilterPreset.WHATSAPP_MEDIA -> "WhatsApp"
     }
 }
@@ -139,8 +159,8 @@ private fun PaywallDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Pro unlock") },
-        text = { Text("Pro unlock $2.99, unlimited deletions") },
+        title = { Text("Unlimited deletes. One-time $2.99") },
+        text = { Text("You’ve used 100 free deletes.") },
         confirmButton = {
             Button(onClick = onBuyPro) {
                 Text("Buy Pro")
@@ -148,8 +168,33 @@ private fun PaywallDialog(
         },
         dismissButton = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = onRestorePurchases) { Text("Restore purchases") }
-                TextButton(onClick = onDismiss) { Text("Close") }
+                TextButton(onClick = onRestorePurchases) { Text("Restore") }
+                TextButton(onClick = onDismiss) { Text("Not now") }
+            }
+        },
+    )
+}
+
+
+@Composable
+private fun DeletionSuccessDialog(
+    freedSizeBytes: Long,
+    deletedCount: Int,
+    onContinueCleaning: () -> Unit,
+    onRateApp: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onContinueCleaning,
+        title = { Text("Storage freed 🎉") },
+        text = { Text("Freed ${Formatters.bytesToHumanReadable(freedSizeBytes)} from $deletedCount files") },
+        confirmButton = {
+            Button(onClick = onContinueCleaning) {
+                Text("Continue cleaning")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onRateApp) {
+                Text("Rate app")
             }
         },
     )
