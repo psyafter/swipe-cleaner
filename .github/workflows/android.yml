@@ -18,6 +18,8 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v3
+      - name: Verify string key and placeholder parity
+        run: python3 tools/verify_strings_keys.py
       - name: Unit tests
         run: ./gradlew :app:testDebugUnitTest
       - name: Assemble debug
@@ -34,6 +36,8 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v3
+      - name: Verify string key and placeholder parity
+        run: python3 tools/verify_strings_keys.py
       - name: Unit tests
         run: ./gradlew :app:testDebugUnitTest
       - name: Bundle release
