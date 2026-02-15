@@ -70,4 +70,17 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
+
+    <string name="use_system_language">Sistem dilini kullan</string>
+    <string name="english_language">İngilizce</string>
+    <string name="safe_delete_notice">Güvenli silme: Android onay isteyecek.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">Başka bir filtre deneyin:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">Faturalandırma kullanılamıyor: %1$s</string>
+    <string name="billing_disconnected_message">Faturalandırma bağlantısı kesildi</string>
+    <string name="restore_failed_message">Geri yükleme başarısız: %1$s</string>
+    <string name="product_unavailable_message">Ürün bu derlemede kullanılamıyor. Play Console ürün kimliğini kontrol edin.</string>
+    <string name="purchase_acknowledge_failed">Satın alma onayı başarısız</string>
 </resources>

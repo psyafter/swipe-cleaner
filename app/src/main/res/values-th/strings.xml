@@ -70,4 +70,17 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
+
+    <string name="use_system_language">ใช้ภาษาของระบบ</string>
+    <string name="english_language">อังกฤษ</string>
+    <string name="safe_delete_notice">ลบอย่างปลอดภัย: Android จะขอการยืนยัน</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">ลองตัวกรองอื่น:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">ไม่สามารถใช้งานการเรียกเก็บเงินได้: %1$s</string>
+    <string name="billing_disconnected_message">ตัดการเชื่อมต่อการเรียกเก็บเงินแล้ว</string>
+    <string name="restore_failed_message">กู้คืนไม่สำเร็จ: %1$s</string>
+    <string name="product_unavailable_message">สินค้าไม่พร้อมใช้งานในบิลด์นี้ ตรวจสอบรหัสสินค้าใน Play Console</string>
+    <string name="purchase_acknowledge_failed">ยืนยันการซื้อไม่สำเร็จ</string>
 </resources>

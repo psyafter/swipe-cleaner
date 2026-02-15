@@ -70,4 +70,17 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
+
+    <string name="use_system_language">Dùng ngôn ngữ hệ thống</string>
+    <string name="english_language">Tiếng Anh</string>
+    <string name="safe_delete_notice">Xóa an toàn: Android sẽ yêu cầu xác nhận.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">Thử bộ lọc khác:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">Thanh toán không khả dụng: %1$s</string>
+    <string name="billing_disconnected_message">Đã ngắt kết nối thanh toán</string>
+    <string name="restore_failed_message">Khôi phục thất bại: %1$s</string>
+    <string name="product_unavailable_message">Sản phẩm không khả dụng trong bản dựng này. Kiểm tra mã sản phẩm trong Play Console.</string>
+    <string name="purchase_acknowledge_failed">Xác nhận mua hàng thất bại</string>
 </resources>

@@ -70,4 +70,17 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
+
+    <string name="use_system_language">Gamitin ang wika ng system</string>
+    <string name="english_language">Ingles</string>
+    <string name="safe_delete_notice">Ligtas na pag-delete: hihingi ng kumpirmasyon ang Android.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">Subukan ang ibang filter:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">Hindi available ang billing: %1$s</string>
+    <string name="billing_disconnected_message">Nadiskonekta ang billing</string>
+    <string name="restore_failed_message">Nabigo ang pag-restore: %1$s</string>
+    <string name="product_unavailable_message">Hindi available ang produkto sa build na ito. Suriin ang product ID sa Play Console.</string>
+    <string name="purchase_acknowledge_failed">Nabigo ang pagkilala sa pagbili</string>
 </resources>
