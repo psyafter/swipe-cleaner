@@ -70,4 +70,17 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
+
+    <string name="use_system_language">Gunakan bahasa sistem</string>
+    <string name="english_language">Inggris</string>
+    <string name="safe_delete_notice">Penghapusan aman: Android akan meminta konfirmasi.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">Coba filter lain:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">Penagihan tidak tersedia: %1$s</string>
+    <string name="billing_disconnected_message">Penagihan terputus</string>
+    <string name="restore_failed_message">Pemulihan gagal: %1$s</string>
+    <string name="product_unavailable_message">Produk tidak tersedia pada build ini. Periksa ID produk di Play Console.</string>
+    <string name="purchase_acknowledge_failed">Konfirmasi pembelian gagal</string>
 </resources>

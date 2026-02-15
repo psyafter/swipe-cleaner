@@ -70,4 +70,17 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
+
+    <string name="use_system_language">Usar idioma do sistema</string>
+    <string name="english_language">Inglês</string>
+    <string name="safe_delete_notice">Exclusão segura: o Android pedirá confirmação.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">Tente outro filtro:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">Faturamento indisponível: %1$s</string>
+    <string name="billing_disconnected_message">Faturamento desconectado</string>
+    <string name="restore_failed_message">Falha ao restaurar: %1$s</string>
+    <string name="product_unavailable_message">Produto não disponível nesta compilação. Verifique o ID do produto no Play Console.</string>
+    <string name="purchase_acknowledge_failed">Falha ao confirmar a compra</string>
 </resources>

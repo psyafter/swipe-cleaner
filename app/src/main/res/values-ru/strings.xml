@@ -70,4 +70,17 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
+
+    <string name="use_system_language">Использовать язык системы</string>
+    <string name="english_language">Английский</string>
+    <string name="safe_delete_notice">Безопасное удаление: Android попросит подтверждение.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">Попробуйте другой фильтр:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">Оплата недоступна: %1$s</string>
+    <string name="billing_disconnected_message">Сервис оплаты отключен</string>
+    <string name="restore_failed_message">Не удалось восстановить: %1$s</string>
+    <string name="product_unavailable_message">Товар недоступен в этой сборке. Проверьте ID товара в Play Console.</string>
+    <string name="purchase_acknowledge_failed">Не удалось подтвердить покупку</string>
 </resources>

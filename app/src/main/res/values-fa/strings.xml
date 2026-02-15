@@ -70,4 +70,17 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
+
+    <string name="use_system_language">استفاده از زبان سیستم</string>
+    <string name="english_language">انگلیسی</string>
+    <string name="safe_delete_notice">حذف ایمن: Android درخواست تأیید می‌کند.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">فیلتر دیگری را امتحان کنید:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">پرداخت در دسترس نیست: %1$s</string>
+    <string name="billing_disconnected_message">اتصال پرداخت قطع شد</string>
+    <string name="restore_failed_message">بازیابی ناموفق بود: %1$s</string>
+    <string name="product_unavailable_message">محصول در این بیلد در دسترس نیست. شناسه محصول را در Play Console بررسی کنید.</string>
+    <string name="purchase_acknowledge_failed">تأیید خرید ناموفق بود</string>
 </resources>

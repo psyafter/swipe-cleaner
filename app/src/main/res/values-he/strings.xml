@@ -70,4 +70,17 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
+
+    <string name="use_system_language">השתמש בשפת המערכת</string>
+    <string name="english_language">אנגלית</string>
+    <string name="safe_delete_notice">מחיקה בטוחה: Android יבקש אישור.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">נסה מסנן אחר:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">החיוב לא זמין: %1$s</string>
+    <string name="billing_disconnected_message">החיוב נותק</string>
+    <string name="restore_failed_message">השחזור נכשל: %1$s</string>
+    <string name="product_unavailable_message">המוצר לא זמין בבנייה הזו. בדוק את מזהה המוצר ב-Play Console.</string>
+    <string name="purchase_acknowledge_failed">אישור הרכישה נכשל</string>
 </resources>
