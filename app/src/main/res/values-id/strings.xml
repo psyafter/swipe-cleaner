@@ -9,7 +9,8 @@
     <string name="queue_items">Queue: %1$d items</string>
     <string name="keep">Keep</string>
     <string name="delete">Delete</string>
-    <string name="delete_notice">Deletion requires Android system confirmation. Nothing leaves your device.</string>
+    <string name="archive">Arsipkan</string>
+    <string name="move">Pindahkan</string>
     <string name="onboarding_title">Clean your gallery in minutes</string>
     <string name="onboarding_step_swipe">Swipe right to keep. Swipe left to mark for delete.</string>
     <string name="onboarding_step_private">Private by design: media stays on your device.</string>
@@ -49,6 +50,8 @@
     <string name="big_files">Big files</string>
     <string name="old_files">Old files</string>
     <string name="media_meta">%1$s • %2$s</string>
+    <string name="media_kind_image">Gambar</string>
+    <string name="media_kind_video">Video</string>
     <string name="swipe_keep">R→Keep</string>
     <string name="swipe_delete">L→Delete</string>
     <string name="permission_denied_message">Permission denied</string>
@@ -70,7 +73,6 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
-
     <string name="use_system_language">Gunakan bahasa sistem</string>
     <string name="english_language">Inggris</string>
     <string name="safe_delete_notice">Penghapusan aman: Android akan meminta konfirmasi.</string>
@@ -83,4 +85,5 @@
     <string name="restore_failed_message">Pemulihan gagal: %1$s</string>
     <string name="product_unavailable_message">Produk tidak tersedia pada build ini. Periksa ID produk di Play Console.</string>
     <string name="purchase_acknowledge_failed">Konfirmasi pembelian gagal</string>
+    <string name="unknown_media_name">tidak diketahui</string>
 </resources>

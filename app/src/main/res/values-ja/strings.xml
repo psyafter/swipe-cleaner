@@ -9,7 +9,8 @@
     <string name="queue_items">Queue: %1$d items</string>
     <string name="keep">Keep</string>
     <string name="delete">Delete</string>
-    <string name="delete_notice">Deletion requires Android system confirmation. Nothing leaves your device.</string>
+    <string name="archive">アーカイブ</string>
+    <string name="move">移動</string>
     <string name="onboarding_title">Clean your gallery in minutes</string>
     <string name="onboarding_step_swipe">Swipe right to keep. Swipe left to mark for delete.</string>
     <string name="onboarding_step_private">Private by design: media stays on your device.</string>
@@ -49,6 +50,8 @@
     <string name="big_files">Big files</string>
     <string name="old_files">Old files</string>
     <string name="media_meta">%1$s • %2$s</string>
+    <string name="media_kind_image">画像</string>
+    <string name="media_kind_video">動画</string>
     <string name="swipe_keep">R→Keep</string>
     <string name="swipe_delete">L→Delete</string>
     <string name="permission_denied_message">Permission denied</string>
@@ -69,5 +72,18 @@
     <string name="turn_off">Turn off</string>
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
-    <string name="language_applied">Language updated</string>
+    <string name="language_applied">言語を更新しました</string>
+    <string name="use_system_language">システム言語を使用</string>
+    <string name="english_language">英語</string>
+    <string name="safe_delete_notice">安全な削除: Android が確認を求めます。</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">別のフィルターを試してください:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">課金を利用できません: %1$s</string>
+    <string name="billing_disconnected_message">課金サービスが切断されました</string>
+    <string name="restore_failed_message">復元に失敗しました: %1$s</string>
+    <string name="product_unavailable_message">このビルドでは商品を利用できません。Play Console の商品 ID を確認してください。</string>
+    <string name="purchase_acknowledge_failed">購入の確認に失敗しました</string>
+    <string name="unknown_media_name">不明</string>
 </resources>
