@@ -550,7 +550,11 @@ private fun MediaCard(
                 contentScale = ContentScale.Crop,
             )
             Text(
-                text = stringResource(R.string.media_meta, item.kind.name, Formatters.bytesToHumanReadable(item.sizeBytes)),
+                text = stringResource(
+                    R.string.media_meta,
+                    mediaKindLabel(item.kind),
+                    Formatters.bytesToHumanReadable(item.sizeBytes),
+                ),
                 modifier = Modifier.align(Alignment.BottomStart).background(Color.Black.copy(alpha = 0.6f)).padding(8.dp),
                 color = Color.White,
             )
@@ -562,6 +566,14 @@ private fun MediaCard(
                 Pill(stringResource(R.string.swipe_delete))
             }
         }
+    }
+}
+
+@Composable
+private fun mediaKindLabel(kind: MediaKind): String {
+    return when (kind) {
+        MediaKind.IMAGE -> stringResource(R.string.media_kind_image)
+        MediaKind.VIDEO -> stringResource(R.string.media_kind_video)
     }
 }
 
