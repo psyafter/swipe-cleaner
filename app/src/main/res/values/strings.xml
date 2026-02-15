@@ -9,7 +9,6 @@
     <string name="queue_items">Queue: %1$d items</string>
     <string name="keep">Keep</string>
     <string name="delete">Delete</string>
-    <string name="delete_notice">Deletion requires Android system confirmation. Nothing leaves your device.</string>
     <string name="onboarding_title">Clean your gallery in minutes</string>
     <string name="onboarding_step_swipe">Swipe right to keep. Swipe left to mark for delete.</string>
     <string name="onboarding_step_private">Private by design: media stays on your device.</string>
@@ -72,4 +71,14 @@
     <string name="language_applied">Language updated</string>
     <string name="use_system_language">Use system language</string>
     <string name="english_language">English</string>
+    <string name="safe_delete_notice">Safe delete: Android will ask for confirmation.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">Try another filter:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">Billing unavailable: %1$s</string>
+    <string name="billing_disconnected_message">Billing disconnected</string>
+    <string name="restore_failed_message">Restore failed: %1$s</string>
+    <string name="product_unavailable_message">Product not available in this build. Check Play Console product ID.</string>
+    <string name="purchase_acknowledge_failed">Purchase acknowledge failed</string>
 </resources>

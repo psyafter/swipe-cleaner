@@ -14,6 +14,7 @@ import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 
 class BillingManager(context: Context) : PurchasesResponseListener {
+    private val appContext = context.applicationContext
     private val billingClient = BillingClient.newBuilder(context)
         .enablePendingPurchases()
         .setListener { _, purchases ->
@@ -46,12 +47,12 @@ class BillingManager(context: Context) : PurchasesResponseListener {
                     queryPurchases()
                     queryProductDetails()
                 } else {
-                    onMessage("Billing unavailable: ${result.debugMessage}")
+                    onMessage(appContext.getString(R.string.billing_unavailable_message, result.debugMessage))
                 }
             }
 
             override fun onBillingServiceDisconnected() {
-                onMessage("Billing disconnected")
+                onMessage(appContext.getString(R.string.billing_disconnected_message))
             }
         })
     }
@@ -80,7 +81,7 @@ class BillingManager(context: Context) : PurchasesResponseListener {
 
     override fun onQueryPurchasesResponse(result: BillingResult, purchases: MutableList<Purchase>) {
         if (result.responseCode != BillingClient.BillingResponseCode.OK) {
-            onMessage("Restore failed: ${result.debugMessage}")
+            onMessage(appContext.getString(R.string.restore_failed_message, result.debugMessage))
             return
         }
         handlePurchases(purchases)
@@ -98,7 +99,7 @@ class BillingManager(context: Context) : PurchasesResponseListener {
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                 proProductDetails = detailsList.firstOrNull()
                 productAvailabilityMessage = if (proProductDetails == null) {
-                    "Product not available in this build / check Play Console product id"
+                    appContext.getString(R.string.product_unavailable_message)
                 } else {
                     null
                 }
@@ -106,7 +107,7 @@ class BillingManager(context: Context) : PurchasesResponseListener {
                     onMessage(productAvailabilityMessage!!)
                 }
             } else {
-                productAvailabilityMessage = "Billing unavailable: ${result.debugMessage}"
+                productAvailabilityMessage = appContext.getString(R.string.billing_unavailable_message, result.debugMessage)
             }
         }
     }
@@ -130,7 +131,7 @@ class BillingManager(context: Context) : PurchasesResponseListener {
                 if (ackResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     onProStatusChanged(true)
                 } else {
-                    onMessage("Purchase acknowledge failed")
+                    onMessage(appContext.getString(R.string.purchase_acknowledge_failed))
                 }
             }
         } else {
