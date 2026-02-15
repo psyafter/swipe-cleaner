@@ -9,7 +9,8 @@
     <string name="queue_items">Queue: %1$d items</string>
     <string name="keep">Keep</string>
     <string name="delete">Delete</string>
-    <string name="delete_notice">Deletion requires Android system confirmation. Nothing leaves your device.</string>
+    <string name="archive">Archiver</string>
+    <string name="move">Déplacer</string>
     <string name="onboarding_title">Clean your gallery in minutes</string>
     <string name="onboarding_step_swipe">Swipe right to keep. Swipe left to mark for delete.</string>
     <string name="onboarding_step_private">Private by design: media stays on your device.</string>
@@ -49,6 +50,8 @@
     <string name="big_files">Big files</string>
     <string name="old_files">Old files</string>
     <string name="media_meta">%1$s • %2$s</string>
+    <string name="media_kind_image">Image</string>
+    <string name="media_kind_video">Vidéo</string>
     <string name="swipe_keep">R→Keep</string>
     <string name="swipe_delete">L→Delete</string>
     <string name="permission_denied_message">Permission denied</string>
@@ -70,7 +73,6 @@
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
     <string name="language_applied">Language updated</string>
-
     <string name="use_system_language">Utiliser la langue du système</string>
     <string name="english_language">Anglais</string>
     <string name="safe_delete_notice">Suppression sécurisée : Android demandera une confirmation.</string>
@@ -83,4 +85,5 @@
     <string name="restore_failed_message">Échec de la restauration : %1$s</string>
     <string name="product_unavailable_message">Produit non disponible dans cette version. Vérifiez l’ID produit dans la Play Console.</string>
     <string name="purchase_acknowledge_failed">Échec de validation de l’achat</string>
+    <string name="unknown_media_name">inconnu</string>
 </resources>

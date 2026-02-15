@@ -9,7 +9,8 @@
     <string name="queue_items">Queue: %1$d items</string>
     <string name="keep">Keep</string>
     <string name="delete">Delete</string>
-    <string name="delete_notice">Deletion requires Android system confirmation. Nothing leaves your device.</string>
+    <string name="archive">보관</string>
+    <string name="move">이동</string>
     <string name="onboarding_title">Clean your gallery in minutes</string>
     <string name="onboarding_step_swipe">Swipe right to keep. Swipe left to mark for delete.</string>
     <string name="onboarding_step_private">Private by design: media stays on your device.</string>
@@ -49,6 +50,8 @@
     <string name="big_files">Big files</string>
     <string name="old_files">Old files</string>
     <string name="media_meta">%1$s • %2$s</string>
+    <string name="media_kind_image">이미지</string>
+    <string name="media_kind_video">동영상</string>
     <string name="swipe_keep">R→Keep</string>
     <string name="swipe_delete">L→Delete</string>
     <string name="permission_denied_message">Permission denied</string>
@@ -69,5 +72,18 @@
     <string name="turn_off">Turn off</string>
     <string name="app_language_title">App language</string>
     <string name="app_language_row">App language: %1$s</string>
-    <string name="language_applied">Language updated</string>
+    <string name="language_applied">언어가 업데이트되었습니다</string>
+    <string name="use_system_language">시스템 언어 사용</string>
+    <string name="english_language">영어</string>
+    <string name="safe_delete_notice">안전 삭제: Android에서 확인을 요청합니다.</string>
+    <string name="info_icon">ℹ️</string>
+    <string name="try_another_filter">다른 필터를 시도해 보세요:</string>
+    <string name="selected_language_marker">✓ </string>
+    <string name="app_language_option">%1$s%2$s</string>
+    <string name="billing_unavailable_message">결제를 사용할 수 없습니다: %1$s</string>
+    <string name="billing_disconnected_message">결제 서비스 연결이 끊어졌습니다</string>
+    <string name="restore_failed_message">복원 실패: %1$s</string>
+    <string name="product_unavailable_message">이 빌드에서는 상품을 사용할 수 없습니다. Play Console 상품 ID를 확인하세요.</string>
+    <string name="purchase_acknowledge_failed">구매 확인에 실패했습니다</string>
+    <string name="unknown_media_name">알 수 없음</string>
 </resources>
