@@ -16,12 +16,24 @@
 4. Select **Hebrew**, **Arabic**, or **Persian**.
 5. Confirm the "Language updated" message and verify UI text and direction.
 
+## Additional locale spot checks (Batch 2)
+- Chinese (Simplified, `zh-CN`)
+- Chinese (Traditional, `zh-TW`)
+- Ukrainian (`uk`)
+- Serbian (`sr`)
+- Thai (`th`)
+
+For each language above:
+1. Switch app language.
+2. Open each required screen.
+3. Verify no clipped text, no placeholder artifacts, and no crashes.
+
 ## Screens to check
 - Permission screen
-- Main screen
+- Main screen (bottom bar)
 - Paywall
 - Settings
-- Smart Mode info
+- Smart Mode info dialog
 
 ## What good looks like
 - Primary buttons are fully visible and not clipped.
