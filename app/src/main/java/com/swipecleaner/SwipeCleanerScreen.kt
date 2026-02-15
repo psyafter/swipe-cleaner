@@ -397,9 +397,11 @@ private fun SettingsDialog(
                     Text(stringResource(R.string.smart_mode_subtitle), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 }
                 TextButton(onClick = { onShowLanguageDialog(true) }, modifier = Modifier.fillMaxWidth()) {
-                    val label = AppLanguage.options.firstOrNull { it.tag == selectedLanguageTag }?.nativeName
-                        ?.ifBlank { stringResource(R.string.use_system_language) }
-                        ?: stringResource(R.string.english_language)
+                    val label = when {
+                        selectedLanguageTag.isBlank() -> stringResource(R.string.use_system_language)
+                        else -> AppLanguage.options.firstOrNull { it.tag == selectedLanguageTag }?.nativeName
+                            ?: selectedLanguageTag
+                    }
                     Text(stringResource(R.string.app_language_row, label))
                 }
             }
