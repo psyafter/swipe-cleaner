@@ -30,9 +30,21 @@ object MediaFilters {
         return filtered.sortedByDescending { it.dateTakenMillis }
     }
 
+    fun applySmartOrder(
+        items: List<MediaItem>,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): List<MediaItem> {
+        return items.sortedWith(
+            compareByDescending<MediaItem> { smartScore(it, nowMillis) }
+                .thenByDescending { it.sizeBytes }
+                .thenBy { it.dateTakenMillis }
+                .thenBy { it.id },
+        )
+    }
+
     fun totalBytes(items: Collection<MediaItem>): Long = items.sumOf { it.sizeBytes }
 
-    private fun isScreenshot(item: MediaItem): Boolean {
+    fun isScreenshot(item: MediaItem): Boolean {
         val path = item.relativePath.orEmpty()
         val bucket = item.bucketName.orEmpty()
         val mime = item.mimeType.orEmpty()
@@ -41,10 +53,19 @@ object MediaFilters {
             mime.contains("screenshot", ignoreCase = true)
     }
 
-    private fun isWhatsApp(item: MediaItem): Boolean {
+    fun isWhatsApp(item: MediaItem): Boolean {
         val path = item.relativePath.orEmpty()
         val bucket = item.bucketName.orEmpty()
         return path.contains("WhatsApp", ignoreCase = true) ||
             bucket.contains("WhatsApp", ignoreCase = true)
+    }
+
+    private fun smartScore(item: MediaItem, nowMillis: Long): Long {
+        var score = 0L
+        score += item.sizeBytes / (5L * 1024L * 1024L)
+        score += ((nowMillis - item.dateTakenMillis).coerceAtLeast(0L) / TimeUnit.DAYS.toMillis(30))
+        if (isScreenshot(item)) score += 300
+        if (isWhatsApp(item)) score += 250
+        return score
     }
 }

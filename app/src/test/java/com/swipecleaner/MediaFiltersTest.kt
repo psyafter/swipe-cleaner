@@ -78,7 +78,24 @@ class MediaFiltersTest {
         )
     }
 
+
+    @Test
+    fun testSmartOrderPrioritizesImpactAndIsStable() {
+        val items = listOf(
+            media(id = 1, size = 5L * 1024 * 1024, date = BASE_NOW - (5L * DAY), path = "DCIM/Camera"),
+            media(id = 2, size = 150L * 1024 * 1024, date = BASE_NOW - (2L * DAY), path = "DCIM/Camera"),
+            media(id = 3, size = 20L * 1024 * 1024, date = BASE_NOW - (350L * DAY), path = "Pictures/WhatsApp Images"),
+            media(id = 4, size = 20L * 1024 * 1024, date = BASE_NOW - (350L * DAY), path = "Pictures/Screenshots"),
+        )
+
+        val ordered = MediaFilters.applySmartOrder(items, nowMillis = BASE_NOW)
+
+        assertThat(ordered.map { it.id }).containsExactly(4L, 3L, 2L, 1L).inOrder()
+    }
+
+
     private companion object {
         const val BASE_NOW = 1_700_000_000_000L
+        const val DAY = 24L * 60 * 60 * 1000
     }
 }
