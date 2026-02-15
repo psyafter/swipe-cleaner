@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SwipeCleanerViewModel(
+    private val appContext: Context,
     private val contentResolver: ContentResolver,
     private val repository: MediaRepository,
     private val monetizationStore: MonetizationStore,
@@ -28,6 +29,8 @@ class SwipeCleanerViewModel(
             isProUnlocked = monetizationStore.getIsProUnlocked(),
             hasSeenOnboarding = monetizationStore.getHasSeenOnboarding(),
             requireDeleteConfirmation = monetizationStore.getRequireDeleteConfirmation(),
+            smartModeEnabled = monetizationStore.getSmartModeEnabled(),
+            appLanguageTag = monetizationStore.getAppLanguageTag(),
         )
     )
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -40,6 +43,7 @@ class SwipeCleanerViewModel(
     private var awaitingRestoreResult = false
 
     init {
+        AppLanguage.apply(appContext, monetizationStore.getAppLanguageTag())
         billingManager.setCallbacks(
             onProStatusChanged = ::onProStatusChanged,
             onMessage = ::onBillingMessage,
@@ -60,7 +64,7 @@ class SwipeCleanerViewModel(
                 it.copy(
                     hasPermission = false,
                     isPermissionDenied = true,
-                    infoMessage = "Permission denied",
+                    infoMessage = appContext.getString(R.string.permission_denied_message),
                 )
             }
             return
@@ -93,15 +97,47 @@ class SwipeCleanerViewModel(
         _uiState.update { it.copy(requireDeleteConfirmation = value) }
     }
 
+    fun setSmartModeEnabled(value: Boolean) {
+        monetizationStore.setSmartModeEnabled(value)
+        _uiState.update { it.copy(smartModeEnabled = value, showSmartModeInfoDialog = false) }
+        scan()
+    }
+
+    fun toggleSmartModeInfoDialog(show: Boolean) {
+        _uiState.update { it.copy(showSmartModeInfoDialog = show) }
+    }
+
+    fun toggleLanguageDialog(show: Boolean) {
+        _uiState.update { it.copy(showLanguageDialog = show) }
+    }
+
+    fun setAppLanguage(tag: String) {
+        monetizationStore.setAppLanguageTag(tag)
+        AppLanguage.apply(appContext, tag)
+        _uiState.update {
+            it.copy(
+                appLanguageTag = tag,
+                showLanguageDialog = false,
+                infoMessage = appContext.getString(R.string.language_applied),
+            )
+        }
+    }
+
     private fun scan() {
         viewModelScope.launch {
-            val preset = _uiState.value.activeFilter
-            _uiState.update { it.copy(isLoading = true, infoMessage = "Scanning media library…") }
+            val state = _uiState.value
+            val preset = state.activeFilter
+            _uiState.update { it.copy(isLoading = true, infoMessage = appContext.getString(R.string.scanning_library)) }
             val items = repository.scanMedia()
             val filtered = MediaFilters.apply(items, preset)
+            val ordered = if (state.smartModeEnabled && preset == FilterPreset.ALL) {
+                MediaFilters.applySmartOrder(filtered)
+            } else {
+                filtered
+            }
             queue.clear()
             deleteSelection.clear()
-            queue.addAll(filtered)
+            queue.addAll(ordered)
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -110,7 +146,7 @@ class SwipeCleanerViewModel(
                     selectedForDeleteCount = 0,
                     selectedDeleteSizeBytes = 0,
                     lastAction = null,
-                    infoMessage = "Scanned ${filtered.size} items",
+                    infoMessage = appContext.getString(R.string.scanned_items, ordered.size),
                     showDeletionSuccessDialog = false,
                     showDeleteConfirmationDialog = false,
                 )
@@ -153,7 +189,7 @@ class SwipeCleanerViewModel(
                 selectedForDeleteCount = deleteSelection.size,
                 selectedDeleteSizeBytes = MediaFilters.totalBytes(deleteSelection),
                 lastAction = null,
-                infoMessage = "Undid ${last.action.name.lowercase()} action",
+                infoMessage = appContext.getString(R.string.undo_message, last.action.name.lowercase()),
             )
         }
     }
@@ -206,7 +242,7 @@ class SwipeCleanerViewModel(
 
     private fun afterDeletion(success: Boolean) {
         if (!success) {
-            _uiState.update { it.copy(infoMessage = "Canceled") }
+            _uiState.update { it.copy(infoMessage = appContext.getString(R.string.action_canceled)) }
             return
         }
         val deletedCount = deleteSelection.size
@@ -226,7 +262,11 @@ class SwipeCleanerViewModel(
                 selectedForDeleteCount = 0,
                 selectedDeleteSizeBytes = 0,
                 freeDeleteUsedCount = updatedCount,
-                infoMessage = "Deleted $deletedCount files, freed ${Formatters.bytesToHumanReadable(deletedSize)}",
+                infoMessage = appContext.getString(
+                    R.string.deleted_summary,
+                    deletedCount,
+                    Formatters.bytesToHumanReadable(deletedSize),
+                ),
                 showDeletionSuccessDialog = true,
                 lastDeletedCount = deletedCount,
                 lastFreedSizeBytes = deletedSize,
@@ -245,7 +285,7 @@ class SwipeCleanerViewModel(
     fun buyPro(activity: Activity) {
         if (!billingManager.launchPurchaseFlow(activity)) {
             val paywallMessage = billingManager.productAvailabilityMessage()
-                ?: "Purchase is not ready yet. Please try again in a moment"
+                ?: appContext.getString(R.string.purchase_not_ready)
             _uiState.update {
                 it.copy(
                     infoMessage = paywallMessage,
@@ -258,16 +298,16 @@ class SwipeCleanerViewModel(
 
     fun restorePurchases() {
         awaitingRestoreResult = true
-        _uiState.update { it.copy(infoMessage = "Restoring purchases…") }
+        _uiState.update { it.copy(infoMessage = appContext.getString(R.string.restoring_purchases)) }
         billingManager.queryPurchases()
     }
 
     private fun onProStatusChanged(isProUnlocked: Boolean) {
         monetizationStore.setIsProUnlocked(isProUnlocked)
         val restoreMessage = if (awaitingRestoreResult) {
-            if (isProUnlocked) "Purchases restored" else "No active purchases found"
+            if (isProUnlocked) appContext.getString(R.string.purchases_restored) else appContext.getString(R.string.no_purchases_found)
         } else {
-            if (isProUnlocked) "Pro unlocked" else null
+            if (isProUnlocked) appContext.getString(R.string.pro_unlocked) else null
         }
         awaitingRestoreResult = false
         _uiState.update {
@@ -308,6 +348,7 @@ class SwipeCleanerViewModel(
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val billingManager = BillingManager(context)
             return SwipeCleanerViewModel(
+                appContext = context.applicationContext,
                 contentResolver = contentResolver,
                 repository = MediaRepository(contentResolver),
                 monetizationStore = MonetizationStore(context),

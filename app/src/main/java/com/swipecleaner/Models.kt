@@ -45,6 +45,10 @@ data class UiState(
     val requireDeleteConfirmation: Boolean = true,
     val showDeleteConfirmationDialog: Boolean = false,
     val showSettingsDialog: Boolean = false,
+    val smartModeEnabled: Boolean = true,
+    val showSmartModeInfoDialog: Boolean = false,
+    val appLanguageTag: String = "",
+    val showLanguageDialog: Boolean = false,
 )
 
 sealed interface UiEvent {
