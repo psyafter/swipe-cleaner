@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +19,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,7 +52,19 @@ fun SwipeCleanerScreen(
     onClosePaywall: () -> Unit,
     onDismissDeletionSuccess: () -> Unit,
     onRateApp: () -> Unit,
+    onRescan: () -> Unit,
+    onStartOnboarding: () -> Unit,
+    onOpenSettingsSheet: () -> Unit,
+    onCloseSettingsSheet: () -> Unit,
+    onSetRequireDeleteConfirmation: (Boolean) -> Unit,
+    onDismissDeleteConfirmation: () -> Unit,
+    onConfirmDeleteNow: () -> Unit,
 ) {
+    if (!state.hasSeenOnboarding) {
+        OnboardingScreen(onStartCleaning = onStartOnboarding)
+        return
+    }
+
     if (!state.hasPermission) {
         PermissionScreen(
             onRequestPermissions = onRequestPermissions,
@@ -60,54 +76,74 @@ fun SwipeCleanerScreen(
 
     val freeLeft = (FREE_DELETE_LIMIT - state.freeDeleteUsedCount).coerceAtLeast(0)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(
-            text = "Swipe Cleaner",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-        )
-
-        FilterRow(active = state.activeFilter, onFilterSelected = onFilterSelected)
-
-        Text(
-            text = "You can free ${Formatters.bytesToHumanReadable(state.selectedDeleteSizeBytes)}",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-        )
-        Text("Marked: ${state.selectedForDeleteCount} files")
-        Text(
-            if (state.isProUnlocked) "Pro unlocked: unlimited deletions"
-            else "Free deletions left: $freeLeft",
-            color = Color.Gray,
-        )
-        Text("Queue: ${state.remainingCount} items", color = Color.Gray)
-
-        if (state.isLoading) {
-            Box(Modifier.fillMaxWidth().height(280.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+    Scaffold(
+        bottomBar = {
+            BottomActionBar(
+                selectedCount = state.selectedForDeleteCount,
+                canUndo = state.lastAction != null,
+                canDelete = state.selectedForDeleteCount > 0,
+                onUndo = onUndo,
+                onDelete = onConfirmDelete,
+            )
+        },
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text = "Swipe Cleaner",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+                TextButton(onClick = onOpenSettingsSheet) { Text("Settings") }
             }
-        } else {
-            MediaCard(state.currentItem, onAction)
+
+            FilterRow(active = state.activeFilter, onFilterSelected = onFilterSelected)
+
+            Text(
+                text = "You can free ${Formatters.bytesToHumanReadable(state.selectedDeleteSizeBytes)}",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Text("Marked: ${state.selectedForDeleteCount} files")
+            Text(
+                if (state.isProUnlocked) "Pro unlocked: unlimited deletions"
+                else "Free deletions left: $freeLeft",
+                color = Color.Gray,
+            )
+            Text("Queue: ${state.remainingCount} items", color = Color.Gray)
+
+            if (state.isLoading) {
+                Box(Modifier.fillMaxWidth().height(280.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                MediaCard(
+                    item = state.currentItem,
+                    onAction = onAction,
+                    onRescan = onRescan,
+                    onFilterSelected = onFilterSelected,
+                )
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { onAction(SwipeAction.KEEP) }, enabled = state.currentItem != null) { Text("Keep") }
+                OutlinedButton(onClick = { onAction(SwipeAction.DELETE) }, enabled = state.currentItem != null) { Text("Delete") }
+            }
+
+            Text(
+                "Deletion requires Android system confirmation. Nothing leaves your device.",
+                color = Color.Gray,
+                style = MaterialTheme.typography.bodySmall,
+            )
+
+            state.infoMessage?.let { Text(it, color = Color.Gray) }
         }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { onAction(SwipeAction.KEEP) }, enabled = state.currentItem != null) { Text("Keep") }
-            Button(onClick = { onAction(SwipeAction.DELETE) }, enabled = state.currentItem != null) { Text("Delete") }
-        }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = onUndo, enabled = state.lastAction != null) { Text("Undo") }
-            Button(onClick = onConfirmDelete, enabled = state.selectedForDeleteCount > 0) { Text("Free space now") }
-        }
-
-        Text("Will ask system confirmation", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
-
-        state.infoMessage?.let { Text(it, color = Color.Gray) }
     }
 
     if (state.showDeletionSuccessDialog) {
@@ -126,6 +162,65 @@ fun SwipeCleanerScreen(
             onDismiss = onClosePaywall,
             paywallMessage = state.paywallMessage,
         )
+    }
+
+    if (state.showDeleteConfirmationDialog) {
+        DeleteConfirmationDialog(
+            selectedCount = state.selectedForDeleteCount,
+            selectedSizeBytes = state.selectedDeleteSizeBytes,
+            onDismiss = onDismissDeleteConfirmation,
+            onConfirm = onConfirmDeleteNow,
+        )
+    }
+
+    if (state.showSettingsDialog) {
+        SettingsDialog(
+            requireDeleteConfirmation = state.requireDeleteConfirmation,
+            onSetRequireDeleteConfirmation = onSetRequireDeleteConfirmation,
+            onDismiss = onCloseSettingsSheet,
+        )
+    }
+}
+
+@Composable
+private fun OnboardingScreen(onStartCleaning: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+    ) {
+        Text("Clean your gallery in minutes", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Card(Modifier.fillMaxWidth()) { Text("Swipe right to keep. Swipe left to mark for delete.", modifier = Modifier.padding(16.dp)) }
+        Card(Modifier.fillMaxWidth()) { Text("Private by design: media stays on your device.", modifier = Modifier.padding(16.dp)) }
+        Card(Modifier.fillMaxWidth()) { Text("Review selected files and free space fast.", modifier = Modifier.padding(16.dp)) }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = onStartCleaning, modifier = Modifier.fillMaxWidth()) {
+            Text("Start cleaning")
+        }
+    }
+}
+
+@Composable
+private fun BottomActionBar(
+    selectedCount: Int,
+    canUndo: Boolean,
+    canDelete: Boolean,
+    onUndo: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        OutlinedButton(onClick = onUndo, enabled = canUndo, modifier = Modifier.weight(1f)) {
+            Text("Undo")
+        }
+        Button(onClick = onDelete, enabled = canDelete, modifier = Modifier.weight(2f)) {
+            Text("Free space ($selectedCount)")
+        }
     }
 }
 
@@ -161,11 +256,14 @@ private fun PaywallDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Unlimited deletes.\nOne-time $2.99") },
+        title = { Text("Swipe Cleaner Pro\nOne-time $2.99") },
         text = {
             Text(
                 buildString {
-                    append("You’ve used $FREE_DELETE_LIMIT free deletes.")
+                    append("You've reached the free delete limit.\n\n")
+                    append("• Unlimited deletes\n")
+                    append("• One-time purchase, no subscription\n")
+                    append("• Offline and private-first")
                     if (!paywallMessage.isNullOrBlank()) {
                         append("\n\n")
                         append(paywallMessage)
@@ -175,18 +273,63 @@ private fun PaywallDialog(
         },
         confirmButton = {
             Button(onClick = onBuyPro) {
-                Text("Buy Pro")
+                Text("Upgrade to Pro")
             }
         },
         dismissButton = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = onRestorePurchases) { Text("Restore") }
+                TextButton(onClick = onRestorePurchases) { Text("Restore purchases") }
                 TextButton(onClick = onDismiss) { Text("Not now") }
             }
         },
     )
 }
 
+@Composable
+private fun DeleteConfirmationDialog(
+    selectedCount: Int,
+    selectedSizeBytes: Long,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Confirm cleaning session") },
+        text = {
+            Text(
+                "Delete $selectedCount files and free about ${Formatters.bytesToHumanReadable(selectedSizeBytes)}?\n\nAndroid will ask for final system confirmation.",
+            )
+        },
+        confirmButton = { Button(onClick = onConfirm) { Text("Continue") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
+}
+
+@Composable
+private fun SettingsDialog(
+    requireDeleteConfirmation: Boolean,
+    onSetRequireDeleteConfirmation: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Settings") },
+        text = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Require confirmation before deleting session")
+                Switch(
+                    checked = requireDeleteConfirmation,
+                    onCheckedChange = onSetRequireDeleteConfirmation,
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Done") } },
+    )
+}
 
 @Composable
 private fun DeletionSuccessDialog(
@@ -236,11 +379,26 @@ private fun PermissionScreen(
 }
 
 @Composable
-private fun MediaCard(item: MediaItem?, onAction: (SwipeAction) -> Unit) {
+private fun MediaCard(
+    item: MediaItem?,
+    onAction: (SwipeAction) -> Unit,
+    onRescan: () -> Unit,
+    onFilterSelected: (FilterPreset) -> Unit,
+) {
     if (item == null) {
         Card(modifier = Modifier.fillMaxWidth().height(280.dp)) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Done. Queue is empty.")
+            Column(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("All done", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text("No more items in this queue.")
+                Button(onClick = onRescan, modifier = Modifier.padding(top = 12.dp)) { Text("Rescan") }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                    TextButton(onClick = { onFilterSelected(FilterPreset.LARGE_ONLY) }) { Text("Big files") }
+                    TextButton(onClick = { onFilterSelected(FilterPreset.OLD_ONLY) }) { Text("Old files") }
+                }
             }
         }
         return
