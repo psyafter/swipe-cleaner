@@ -75,7 +75,13 @@ Use this template:
 - Risks, follow-ups, and binary-handling instructions (if needed).
 ```
 
-## 8. Modes (the key part)
+## 8. Anti-regress guard: user-facing strings
+- No hardcoded user-facing strings in Kotlin/Compose.
+- Use `strings.xml` with `stringResource(...)` in Compose and `getString(...)` in non-Compose code.
+- Verification command:
+  - `git grep -nE 'Text\("|title = "|label = "|"[A-Za-z][^"\n]{2,}"' app/src/main/java/com/swipecleaner || true`
+
+## 9. Modes (the key part)
 A prompt should specify MODE and TASK; everything else is read from this document.
 
 ### MODE: BUGFIX

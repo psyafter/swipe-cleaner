@@ -1,13 +1,17 @@
 package com.swipecleaner
 
 import android.content.ContentResolver
+import android.content.Context
 import android.content.ContentUris
 import android.os.Build
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class MediaRepository(private val contentResolver: ContentResolver) {
+class MediaRepository(context: Context) {
+
+    private val contentResolver = context.contentResolver
+    private val unknownMediaName = context.getString(R.string.unknown_media_name)
 
     suspend fun scanMedia(limit: Int = 2_000): List<MediaItem> = withContext(Dispatchers.IO) {
         val items = mutableListOf<MediaItem>()
@@ -72,7 +76,7 @@ class MediaRepository(private val contentResolver: ContentResolver) {
                 result += MediaItem(
                     id = id,
                     uri = contentUri,
-                    displayName = cursor.getString(nameColumn) ?: "unknown",
+                    displayName = cursor.getString(nameColumn) ?: unknownMediaName,
                     sizeBytes = cursor.getLong(sizeColumn),
                     dateTakenMillis = if (dateTaken > 0) dateTaken else dateAddedMillis,
                     mimeType = cursor.getString(mimeColumn),

@@ -357,7 +357,7 @@ class SwipeCleanerViewModel(
             return SwipeCleanerViewModel(
                 appContext = context.applicationContext,
                 contentResolver = contentResolver,
-                repository = MediaRepository(contentResolver),
+                repository = MediaRepository(context),
                 monetizationStore = MonetizationStore(context),
                 billingManager = billingManager,
             ) as T

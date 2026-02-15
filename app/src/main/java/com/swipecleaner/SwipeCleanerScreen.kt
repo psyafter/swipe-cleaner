@@ -399,7 +399,7 @@ private fun SettingsDialog(
                 TextButton(onClick = { onShowLanguageDialog(true) }, modifier = Modifier.fillMaxWidth()) {
                     val label = when {
                         selectedLanguageTag.isBlank() -> stringResource(R.string.use_system_language)
-                        else -> AppLanguage.options.firstOrNull { it.tag == selectedLanguageTag }?.nativeName
+                        else -> AppLanguage.options.firstOrNull { it.tag == selectedLanguageTag }?.let { AppLanguage.nativeName(it.tag) }
                             ?: selectedLanguageTag
                     }
                     Text(stringResource(R.string.app_language_row, label))
@@ -435,7 +435,8 @@ private fun AppLanguageDialog(
                 items(AppLanguage.options) { option ->
                     TextButton(onClick = { onSelect(option.tag) }, modifier = Modifier.fillMaxWidth()) {
                         val marker = if (option.tag == selectedTag) stringResource(R.string.selected_language_marker) else ""
-                        val label = option.nativeName.ifBlank { stringResource(R.string.use_system_language) }
+                        val label = option.tag.takeIf { it.isNotBlank() }?.let { AppLanguage.nativeName(it) }
+                            ?: stringResource(R.string.use_system_language)
                         Text(stringResource(R.string.app_language_option, marker, label))
                     }
                 }
