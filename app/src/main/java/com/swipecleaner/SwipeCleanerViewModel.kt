@@ -26,6 +26,8 @@ class SwipeCleanerViewModel(
         UiState(
             freeDeleteUsedCount = monetizationStore.getFreeDeleteUsedCount(),
             isProUnlocked = monetizationStore.getIsProUnlocked(),
+            hasSeenOnboarding = monetizationStore.getHasSeenOnboarding(),
+            requireDeleteConfirmation = monetizationStore.getRequireDeleteConfirmation(),
         )
     )
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -37,7 +39,6 @@ class SwipeCleanerViewModel(
     private val deleteSelection = linkedSetOf<MediaItem>()
     private var awaitingRestoreResult = false
 
-
     init {
         billingManager.setCallbacks(
             onProStatusChanged = ::onProStatusChanged,
@@ -45,7 +46,6 @@ class SwipeCleanerViewModel(
         )
         billingManager.connect()
     }
-
 
     fun requestPermissions() {
         _uiState.update { it.copy(isPermissionDenied = false, infoMessage = null) }
@@ -75,6 +75,24 @@ class SwipeCleanerViewModel(
         scan()
     }
 
+    fun rescan() {
+        scan()
+    }
+
+    fun completeOnboarding() {
+        monetizationStore.setHasSeenOnboarding(true)
+        _uiState.update { it.copy(hasSeenOnboarding = true) }
+    }
+
+    fun toggleSettingsDialog(show: Boolean) {
+        _uiState.update { it.copy(showSettingsDialog = show) }
+    }
+
+    fun setRequireDeleteConfirmation(value: Boolean) {
+        monetizationStore.setRequireDeleteConfirmation(value)
+        _uiState.update { it.copy(requireDeleteConfirmation = value) }
+    }
+
     private fun scan() {
         viewModelScope.launch {
             val preset = _uiState.value.activeFilter
@@ -94,6 +112,7 @@ class SwipeCleanerViewModel(
                     lastAction = null,
                     infoMessage = "Scanned ${filtered.size} items",
                     showDeletionSuccessDialog = false,
+                    showDeleteConfirmationDialog = false,
                 )
             }
         }
@@ -139,8 +158,22 @@ class SwipeCleanerViewModel(
         }
     }
 
+    fun requestDelete() {
+        if (deleteSelection.isEmpty()) return
+        if (_uiState.value.requireDeleteConfirmation) {
+            _uiState.update { it.copy(showDeleteConfirmationDialog = true) }
+            return
+        }
+        confirmDeletion()
+    }
+
+    fun dismissDeleteConfirmationDialog() {
+        _uiState.update { it.copy(showDeleteConfirmationDialog = false) }
+    }
+
     fun confirmDeletion() {
         if (deleteSelection.isEmpty()) return
+        _uiState.update { it.copy(showDeleteConfirmationDialog = false) }
 
         val currentState = _uiState.value
         if (!currentState.isProUnlocked) {

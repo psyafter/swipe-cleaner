@@ -41,6 +41,10 @@ data class UiState(
     val showDeletionSuccessDialog: Boolean = false,
     val lastDeletedCount: Int = 0,
     val lastFreedSizeBytes: Long = 0,
+    val hasSeenOnboarding: Boolean = false,
+    val requireDeleteConfirmation: Boolean = true,
+    val showDeleteConfirmationDialog: Boolean = false,
+    val showSettingsDialog: Boolean = false,
 )
 
 sealed interface UiEvent {
