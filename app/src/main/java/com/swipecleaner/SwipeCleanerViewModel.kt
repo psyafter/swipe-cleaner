@@ -182,6 +182,13 @@ class SwipeCleanerViewModel(
             deleteSelection.remove(last.item)
         }
 
+        val actionLabel = when (last.action) {
+            SwipeAction.KEEP -> appContext.getString(R.string.keep)
+            SwipeAction.DELETE -> appContext.getString(R.string.delete)
+            SwipeAction.ARCHIVE -> appContext.getString(R.string.archive)
+            SwipeAction.MOVE -> appContext.getString(R.string.move)
+        }
+
         _uiState.update {
             it.copy(
                 currentItem = queue.firstOrNull(),
@@ -189,7 +196,7 @@ class SwipeCleanerViewModel(
                 selectedForDeleteCount = deleteSelection.size,
                 selectedDeleteSizeBytes = MediaFilters.totalBytes(deleteSelection),
                 lastAction = null,
-                infoMessage = appContext.getString(R.string.undo_message, last.action.name.lowercase()),
+                infoMessage = appContext.getString(R.string.undo_message, actionLabel),
             )
         }
     }
