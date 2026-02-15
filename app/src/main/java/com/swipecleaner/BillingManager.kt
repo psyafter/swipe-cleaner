@@ -108,6 +108,7 @@ class BillingManager(context: Context) : PurchasesResponseListener {
                 }
             } else {
                 productAvailabilityMessage = appContext.getString(R.string.billing_unavailable_message, result.debugMessage)
+                onMessage(productAvailabilityMessage!!)
             }
         }
     }
