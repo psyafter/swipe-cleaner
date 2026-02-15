@@ -151,11 +151,7 @@ fun SwipeCleanerScreen(
                 OutlinedButton(onClick = { onAction(SwipeAction.DELETE) }, enabled = state.currentItem != null) { Text(stringResource(R.string.delete)) }
             }
 
-            Text(
-                stringResource(R.string.delete_notice),
-                color = Color.Gray,
-                style = MaterialTheme.typography.bodySmall,
-            )
+            SafetyInfoRow()
 
             state.infoMessage?.let { Text(it, color = Color.Gray) }
         }
@@ -212,6 +208,22 @@ fun SwipeCleanerScreen(
             selectedTag = state.appLanguageTag,
             onDismiss = { onShowLanguageDialog(false) },
             onSelect = onSetLanguage,
+        )
+    }
+}
+
+@Composable
+private fun SafetyInfoRow() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = stringResource(R.string.info_icon), style = MaterialTheme.typography.bodySmall)
+        Text(
+            text = stringResource(R.string.safe_delete_notice),
+            color = Color.Gray,
+            style = MaterialTheme.typography.bodySmall,
         )
     }
 }
@@ -420,9 +432,9 @@ private fun AppLanguageDialog(
             LazyColumn {
                 items(AppLanguage.options) { option ->
                     TextButton(onClick = { onSelect(option.tag) }, modifier = Modifier.fillMaxWidth()) {
-                        val marker = if (option.tag == selectedTag) "✓ " else ""
+                        val marker = if (option.tag == selectedTag) stringResource(R.string.selected_language_marker) else ""
                         val label = option.nativeName.ifBlank { stringResource(R.string.use_system_language) }
-                        Text("$marker$label")
+                        Text(stringResource(R.string.app_language_option, marker, label))
                     }
                 }
             }
@@ -495,6 +507,12 @@ private fun MediaCard(
                 Text(stringResource(R.string.all_done), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                 Text(stringResource(R.string.no_more_items))
                 Button(onClick = onRescan, modifier = Modifier.padding(top = 12.dp)) { Text(stringResource(R.string.rescan)) }
+                Text(
+                    text = stringResource(R.string.try_another_filter),
+                    modifier = Modifier.padding(top = 8.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
                     TextButton(onClick = { onFilterSelected(FilterPreset.LARGE_ONLY) }) { Text(stringResource(R.string.big_files)) }
                     TextButton(onClick = { onFilterSelected(FilterPreset.OLD_ONLY) }) { Text(stringResource(R.string.old_files)) }
