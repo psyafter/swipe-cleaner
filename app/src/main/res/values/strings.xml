@@ -86,4 +86,26 @@
     <string name="product_unavailable_message">Product not available in this build. Check Play Console product ID.</string>
     <string name="purchase_acknowledge_failed">Purchase acknowledge failed</string>
     <string name="unknown_media_name">unknown</string>
+
+    <string name="session_kept">Kept: %1$d</string>
+    <string name="session_marked">Marked: %1$d</string>
+    <string name="session_freeable">Estimated freeable: %1$s</string>
+    <string name="review_count">Review (%1$d)</string>
+    <string name="review_selected_title">Review selected</string>
+    <string name="review_selected_empty">No items selected for deletion.</string>
+    <string name="back">Back</string>
+    <string name="badge_screenshots">Screenshots</string>
+    <string name="badge_whatsapp">WhatsApp</string>
+    <string name="skip">Skip</string>
+    <string name="filters_disabled_smart_mode">Turn off Smart Mode to use manual filters.</string>
+    <string name="scan_failed_title">Couldn't scan media</string>
+    <string name="scan_failed_permission">Media access was blocked. Check permissions and try again.</string>
+    <string name="scan_failed_generic">We couldn't read your media right now. Try again.</string>
+    <string name="try_again">Try again</string>
+    <string name="delete_failed_message">Delete failed or was canceled. Please try again.</string>
+    <string name="settings_button_a11y">Open settings</string>
+    <string name="smart_mode_toggle_a11y">Toggle Smart Mode</string>
+    <string name="keep_button_a11y">Keep current item</string>
+    <string name="delete_button_a11y">Mark current item for deletion</string>
+
 </resources>

@@ -3,12 +3,16 @@ package com.swipecleaner
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.Context
+import android.database.SQLException
 import android.os.Build
+import android.os.SystemClock
 import android.provider.MediaStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,6 +45,9 @@ class SwipeCleanerViewModel(
     private val queue = ArrayDeque<MediaItem>()
     private val deleteSelection = linkedSetOf<MediaItem>()
     private var awaitingRestoreResult = false
+    private var scanJob: Job? = null
+    private var lastScanRequestAt = 0L
+    private var cachedSourceItems: List<MediaItem>? = null
 
     init {
         AppLanguage.apply(appContext, monetizationStore.getAppLanguageTag())
@@ -70,7 +77,7 @@ class SwipeCleanerViewModel(
             return
         }
         _uiState.update { it.copy(hasPermission = true, isPermissionDenied = false, infoMessage = null) }
-        scan()
+        scan(forceRescan = true)
     }
 
     fun setFilterPreset(preset: FilterPreset) {
@@ -80,7 +87,7 @@ class SwipeCleanerViewModel(
     }
 
     fun rescan() {
-        scan()
+        scan(forceRescan = true, applyDebounce = false)
     }
 
     fun completeOnboarding() {
@@ -99,7 +106,14 @@ class SwipeCleanerViewModel(
 
     fun setSmartModeEnabled(value: Boolean) {
         monetizationStore.setSmartModeEnabled(value)
-        _uiState.update { it.copy(smartModeEnabled = value, showSmartModeInfoDialog = false) }
+        _uiState.update {
+            it.copy(
+                smartModeEnabled = value,
+                showSmartModeInfoDialog = false,
+                activeFilter = if (value) FilterPreset.ALL else it.activeFilter,
+                infoMessage = null,
+            )
+        }
         scan()
     }
 
@@ -123,34 +137,86 @@ class SwipeCleanerViewModel(
         }
     }
 
-    private fun scan() {
-        viewModelScope.launch {
-            val state = _uiState.value
-            val preset = state.activeFilter
-            _uiState.update { it.copy(isLoading = true, infoMessage = appContext.getString(R.string.scanning_library)) }
-            val items = repository.scanMedia()
-            val filtered = MediaFilters.apply(items, preset)
-            val ordered = if (state.smartModeEnabled && preset == FilterPreset.ALL) {
-                MediaFilters.applySmartOrder(filtered)
-            } else {
-                filtered
+    private fun scan(forceRescan: Boolean = false, applyDebounce: Boolean = true) {
+        scanJob?.cancel()
+        scanJob = viewModelScope.launch {
+            if (applyDebounce) {
+                val now = SystemClock.elapsedRealtime()
+                val elapsed = now - lastScanRequestAt
+                if (elapsed < SCAN_DEBOUNCE_MS) {
+                    delay(SCAN_DEBOUNCE_MS - elapsed)
+                }
+                lastScanRequestAt = SystemClock.elapsedRealtime()
             }
-            queue.clear()
-            deleteSelection.clear()
-            queue.addAll(ordered)
+
             _uiState.update {
                 it.copy(
-                    isLoading = false,
-                    currentItem = queue.firstOrNull(),
-                    remainingCount = queue.size,
-                    selectedForDeleteCount = 0,
-                    selectedDeleteSizeBytes = 0,
-                    lastAction = null,
-                    infoMessage = appContext.getString(R.string.scanned_items, ordered.size),
-                    showDeletionSuccessDialog = false,
-                    showDeleteConfirmationDialog = false,
+                    isLoading = true,
+                    infoMessage = appContext.getString(R.string.scanning_library),
+                    scanErrorMessage = null,
                 )
             }
+
+            try {
+                val state = _uiState.value
+                val sourceItems = if (forceRescan || cachedSourceItems == null) {
+                    repository.scanMedia().also { cachedSourceItems = it }
+                } else {
+                    cachedSourceItems.orEmpty()
+                }
+                val filtered = MediaFilters.apply(sourceItems, state.activeFilter)
+                val ordered = if (state.smartModeEnabled) {
+                    MediaFilters.applySmartOrder(filtered)
+                } else {
+                    filtered
+                }
+                queue.clear()
+                deleteSelection.clear()
+                queue.addAll(ordered)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        currentItem = queue.firstOrNull(),
+                        remainingCount = queue.size,
+                        selectedForDeleteCount = 0,
+                        selectedDeleteSizeBytes = 0,
+                        keptCount = 0,
+                        reviewItems = emptyList(),
+                        showReviewScreen = false,
+                        lastAction = null,
+                        infoMessage = appContext.getString(R.string.scanned_items, ordered.size),
+                        showDeletionSuccessDialog = false,
+                        showDeleteConfirmationDialog = false,
+                        scanErrorMessage = null,
+                    )
+                }
+            } catch (securityException: SecurityException) {
+                onScanFailed(appContext.getString(R.string.scan_failed_permission))
+            } catch (_: IllegalArgumentException) {
+                onScanFailed(appContext.getString(R.string.scan_failed_generic))
+            } catch (_: SQLException) {
+                onScanFailed(appContext.getString(R.string.scan_failed_generic))
+            }
+        }
+    }
+
+    private fun onScanFailed(message: String) {
+        queue.clear()
+        deleteSelection.clear()
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                currentItem = null,
+                remainingCount = 0,
+                selectedForDeleteCount = 0,
+                selectedDeleteSizeBytes = 0,
+                reviewItems = emptyList(),
+                showReviewScreen = false,
+                keptCount = 0,
+                lastAction = null,
+                infoMessage = null,
+                scanErrorMessage = message,
+            )
         }
     }
 
@@ -169,6 +235,8 @@ class SwipeCleanerViewModel(
                 remainingCount = queue.size,
                 selectedForDeleteCount = deleteSelection.size,
                 selectedDeleteSizeBytes = bytes,
+                keptCount = it.keptCount + if (action == SwipeAction.KEEP) 1 else 0,
+                reviewItems = deleteSelection.toList(),
                 lastAction = ActionRecord(current, action),
                 infoMessage = null,
             )
@@ -195,8 +263,29 @@ class SwipeCleanerViewModel(
                 remainingCount = queue.size,
                 selectedForDeleteCount = deleteSelection.size,
                 selectedDeleteSizeBytes = MediaFilters.totalBytes(deleteSelection),
+                keptCount = (it.keptCount - if (last.action == SwipeAction.KEEP) 1 else 0).coerceAtLeast(0),
+                reviewItems = deleteSelection.toList(),
                 lastAction = null,
                 infoMessage = appContext.getString(R.string.undo_message, actionLabel),
+            )
+        }
+    }
+
+    fun openReviewSelected() {
+        _uiState.update { it.copy(showReviewScreen = true, reviewItems = deleteSelection.toList()) }
+    }
+
+    fun closeReviewSelected() {
+        _uiState.update { it.copy(showReviewScreen = false) }
+    }
+
+    fun unmarkFromSelection(itemId: Long) {
+        deleteSelection.removeAll { it.id == itemId }
+        _uiState.update {
+            it.copy(
+                reviewItems = deleteSelection.toList(),
+                selectedForDeleteCount = deleteSelection.size,
+                selectedDeleteSizeBytes = MediaFilters.totalBytes(deleteSelection),
             )
         }
     }
@@ -249,7 +338,7 @@ class SwipeCleanerViewModel(
 
     private fun afterDeletion(success: Boolean) {
         if (!success) {
-            _uiState.update { it.copy(infoMessage = appContext.getString(R.string.action_canceled)) }
+            _uiState.update { it.copy(infoMessage = appContext.getString(R.string.delete_failed_message)) }
             return
         }
         val deletedCount = deleteSelection.size
@@ -268,6 +357,7 @@ class SwipeCleanerViewModel(
             it.copy(
                 selectedForDeleteCount = 0,
                 selectedDeleteSizeBytes = 0,
+                reviewItems = emptyList(),
                 freeDeleteUsedCount = updatedCount,
                 infoMessage = appContext.getString(
                     R.string.deleted_summary,
@@ -275,6 +365,7 @@ class SwipeCleanerViewModel(
                     Formatters.bytesToHumanReadable(deletedSize),
                 ),
                 showDeletionSuccessDialog = true,
+                showReviewScreen = false,
                 lastDeletedCount = deletedCount,
                 lastFreedSizeBytes = deletedSize,
             )
@@ -362,5 +453,9 @@ class SwipeCleanerViewModel(
                 billingManager = billingManager,
             ) as T
         }
+    }
+
+    companion object {
+        private const val SCAN_DEBOUNCE_MS = 250L
     }
 }
