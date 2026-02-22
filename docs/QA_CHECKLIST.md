@@ -7,12 +7,18 @@
 4. Grant media permissions in Settings and return to the app.
 5. Verify the media queue appears.
 
-## Swipe actions
-1. In the main queue, swipe right on an item.
-2. Verify the item is kept and the queue advances.
-3. Swipe left on an item.
-4. Verify the item is marked for delete and selected count increases.
-5. Tap **Undo** and verify the last action is reverted.
+## Session summary + swipe actions
+1. In the main queue, check **Session summary** card is visible.
+2. Swipe right on an item and verify **Kept** increments.
+3. Swipe left on an item and verify **Marked** and **Estimated freeable** update.
+4. Tap **Undo** and verify the last action and counters are reverted.
+
+## Review selected flow
+1. Mark at least 2 items for deletion.
+2. Tap **Review (N)** in the bottom action bar.
+3. Verify only marked items are shown with thumbnail, size, date, and source badge (when detected).
+4. Tap **Keep** on one reviewed item.
+5. Go back and verify marked counter and freeable size are updated.
 
 ## Delete confirmation flow
 1. Mark at least one item for deletion.
@@ -20,25 +26,25 @@
 3. Verify confirmation dialog appears when confirmation is enabled.
 4. Tap **Cancel** and verify no deletion happens.
 5. Repeat and tap **Continue**, then confirm Android system delete dialog.
+6. If system delete is canceled/failed, verify actionable error message appears.
 
-## Paywall flow
-1. Reach free deletion limit on a non-Pro account.
-2. Verify paywall appears.
-3. Tap **Upgrade to Pro** and verify billing flow starts (or a clear message is shown if unavailable).
-4. Tap **Restore purchases** and verify restore status message.
-5. Tap **Not now** and verify paywall closes.
+## Smart Mode + filters interaction
+1. Turn **Smart Mode** ON from main screen header.
+2. Verify filter chips are disabled and hint text says to turn off Smart Mode for manual filters.
+3. Turn **Smart Mode** OFF and verify filter chips become interactive.
+4. Select different filters and verify queue changes.
 
-## Empty queue and rescan
+## Empty queue and rescan loading/refresh
 1. Process all current queue items until empty state is visible.
 2. Verify **Rescan** button is shown.
-3. Tap **Rescan** and verify queue is rebuilt.
+3. Tap **Rescan** and verify loading indicator appears.
+4. Verify queue refreshes after scan completes.
 
-## Smart Mode
-1. Open Settings and enable Smart Mode.
-2. Verify ordering in **All** filter follows smart ranking (high-impact media first).
-3. Open **What is this?** and verify explainer dialog appears.
-4. Tap **Turn off** and verify Smart Mode is disabled and dialog closes.
-5. Restart app and verify Smart Mode toggle state persists.
+## Scan failure recovery
+1. Deny media permission and trigger scan path.
+2. Verify scan failure state appears with friendly text and **Try again** action.
+3. Re-allow permission in Settings.
+4. Tap **Try again** and verify queue loads successfully.
 
 ## App language override
 1. Open Settings -> App language.
